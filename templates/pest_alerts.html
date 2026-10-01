@@ -1,0 +1,817 @@
+{% extends "base.html" %}
+
+{% block title %}Pests & Disease Alert - S2C Admin{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ─────────────────────────────────────────
+   PAGE WRAPPER  – narrow centred column
+   like a mobile screen inside the dashboard
+───────────────────────────────────────────*/
+.pest-page {
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 0 0 60px 0;
+    background: #f5f6fa;
+    min-height: 100vh;
+}
+
+/* ── top "on this page" nav ── */
+.page-toc {
+    background: #fff;
+    padding: 12px 16px 10px;
+    border-bottom: 1px solid #eee;
+    font-size: 0.78rem;
+    line-height: 2;
+}
+.page-toc strong {
+    display: block;
+    color: #444;
+    margin-bottom: 2px;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+}
+.page-toc a {
+    display: block;
+    color: #1565C0;
+    text-decoration: none;
+    font-weight: 500;
+}
+.page-toc a .badge-new {
+    background: #4CAF50;
+    color: #fff;
+    font-size: .58rem;
+    padding: 1px 5px;
+    border-radius: 4px;
+    margin-left: 4px;
+    vertical-align: middle;
+    font-weight: 700;
+    letter-spacing: .02em;
+}
+
+/* ── section block ── */
+.pest-section {
+    background: #fff;
+    padding: 20px 16px 16px;
+    margin-bottom: 10px;
+}
+.pest-section h2 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #111;
+    margin-bottom: 4px;
+}
+.pest-section .sub {
+    font-size: 0.82rem;
+    color: #555;
+    margin-bottom: 16px;
+    line-height: 1.5;
+}
+
+/* ── notification banner ── */
+.notif-box {
+    background: #EEF3FF;
+    border-radius: 14px;
+    padding: 20px 18px 18px;
+    text-align: center;
+    margin-bottom: 20px;
+}
+.notif-box .notif-icon-wrap {
+    width: 52px;
+    height: 52px;
+    background: #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.08);
+}
+.notif-box .notif-icon-wrap i {
+    font-size: 1.5rem;
+    color: #1565C0;
+}
+.notif-box h6 {
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: #111;
+    margin-bottom: 6px;
+}
+.notif-box p {
+    font-size: 0.79rem;
+    color: #555;
+    margin-bottom: 16px;
+    line-height: 1.5;
+}
+.btn-allow {
+    background: #1565C0;
+    color: #fff;
+    border: none;
+    border-radius: 30px;
+    padding: 10px 52px;
+    font-weight: 600;
+    font-size: 0.92rem;
+    letter-spacing: .02em;
+    transition: background .2s;
+    cursor: pointer;
+}
+.btn-allow:hover  { background: #0d47a1; }
+.btn-allow:active { background: #0a3880; }
+
+/* ── crop label row ── */
+.crop-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: #111;
+    margin: 14px 0 10px;
+}
+.crop-label .emoji { font-size: 1.25rem; }
+
+/* ── pest cards grid (2-col) ── */
+.pest-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 4px;
+}
+.pest-card {
+    border-radius: 12px;
+    overflow: hidden;
+    background: #fff;
+    box-shadow: 0 1px 6px rgba(0,0,0,.09);
+    cursor: pointer;
+    transition: transform .18s, box-shadow .18s;
+}
+.pest-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 16px rgba(0,0,0,.13);
+}
+.pest-img-wrap {
+    position: relative;
+    height: 110px;
+    background: #e8eaf0;
+    overflow: hidden;
+}
+.pest-img-wrap img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+}
+.pest-placeholder {
+    width: 100%; height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.6rem;
+}
+.badge-pill {
+    position: absolute;
+    top: 6px; left: 6px;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 0.62rem;
+    font-weight: 700;
+    padding: 3px 7px;
+    border-radius: 20px;
+    letter-spacing: .02em;
+}
+.badge-alert      { background: #e53935; color: #fff; }
+.badge-prevention { background: #388e3c; color: #fff; }
+.pest-body {
+    padding: 9px 10px 10px;
+}
+.pest-category {
+    font-size: 0.68rem;
+    color: #777;
+    margin-bottom: 2px;
+}
+.pest-name {
+    font-weight: 700;
+    font-size: 0.82rem;
+    color: #111;
+    line-height: 1.3;
+    margin: 0;
+}
+
+/* ── field scouting image card ── */
+.scouting-card {
+    border-radius: 14px;
+    overflow: hidden;
+    position: relative;
+    height: 200px;
+    margin-bottom: 14px;
+    background: #1b4332;
+}
+.scouting-card img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    opacity: .45;
+    position: absolute;
+    inset: 0;
+}
+.scouting-card .sc-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,.65) 0%, rgba(0,0,0,.1) 60%);
+}
+.scouting-card .sc-content {
+    position: relative;
+    padding: 18px 16px;
+    color: #fff;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+}
+.scouting-card .sc-content p {
+    font-size: 0.78rem;
+    color: rgba(255,255,255,.85);
+    margin-bottom: 12px;
+    line-height: 1.45;
+}
+.btn-learn-more {
+    background: rgba(255,255,255,.15);
+    border: 1.5px solid rgba(255,255,255,.6);
+    color: #fff;
+    border-radius: 30px;
+    padding: 8px 28px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    align-self: flex-start;
+    backdrop-filter: blur(4px);
+    text-decoration: none;
+    transition: background .2s;
+}
+.btn-learn-more:hover { background: rgba(255,255,255,.28); color: #fff; }
+
+/* ── info callout ── */
+.info-callout {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    background: #f0f4ff;
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-size: 0.76rem;
+    color: #333;
+    line-height: 1.5;
+}
+.info-callout i { color: #1565C0; flex-shrink: 0; margin-top: 1px; }
+
+/* ── guides list ── */
+.guide-list { list-style: none; padding: 0; margin: 0; }
+.guide-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 13px 0;
+    border-bottom: 1px solid #f0f0f0;
+    text-decoration: none;
+    color: #111;
+    transition: background .12s;
+    cursor: pointer;
+}
+.guide-item:last-child { border-bottom: none; }
+.guide-item:hover { background: #f8f9fb; border-radius: 10px; padding-left: 6px; }
+.guide-thumb {
+    width: 52px; height: 52px;
+    border-radius: 10px;
+    object-fit: cover;
+    background: #e8f5e9;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    overflow: hidden;
+}
+.guide-thumb img { width: 100%; height: 100%; object-fit: cover; border-radius: 10px; }
+.guide-info { flex: 1; min-width: 0; }
+.guide-info .g-name {
+    font-weight: 600;
+    font-size: 0.85rem;
+    line-height: 1.3;
+    margin-bottom: 2px;
+    color: #111;
+}
+.guide-info .g-crop {
+    font-size: 0.72rem;
+    color: #777;
+}
+.guide-chevron { color: #bbb; font-size: .85rem; flex-shrink: 0; }
+
+/* ── admin toolbar (add alert button) ── */
+.admin-bar {
+    display: flex;
+    justify-content: flex-end;
+    padding: 10px 16px 0;
+    background: #f5f6fa;
+}
+.btn-add-alert {
+    background: #1565C0;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 7px 16px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+    transition: background .2s;
+}
+.btn-add-alert:hover { background: #0d47a1; color: #fff; }
+
+/* ── severity badges in table ── */
+.sev-high   { background:#fde8e8; color:#b91c1c; border-radius:6px; padding:2px 8px; font-size:.72rem; font-weight:700; }
+.sev-medium { background:#fef9c3; color:#92400e; border-radius:6px; padding:2px 8px; font-size:.72rem; font-weight:700; }
+.sev-low    { background:#dcfce7; color:#166534; border-radius:6px; padding:2px 8px; font-size:.72rem; font-weight:700; }
+
+/* ── alerts table card ── */
+.alerts-table-card {
+    background: #fff;
+    margin: 10px 0 0;
+    padding: 0;
+}
+.alerts-table-card .card-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #c62828;
+    color: #fff;
+    padding: 10px 16px;
+    font-weight: 600;
+    font-size: .85rem;
+}
+.alerts-table-card .card-header-row .count-badge {
+    background: #fff;
+    color: #c62828;
+    font-size: .7rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 20px;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="pest-page">
+
+    <!-- Admin: Add Alert button -->
+    <div class="admin-bar">
+        <button class="btn-add-alert" data-bs-toggle="modal" data-bs-target="#addAlertModal">
+            <i class="bi bi-plus-circle"></i> Add Alert
+        </button>
+    </div>
+
+    <!-- ── "On this page" TOC ── -->
+    <div class="page-toc">
+        <strong>On this page:</strong>
+        <a href="#section-alerts">Pests &amp; Disease Alert</a>
+        <a href="#section-scouting">Field scouting <span class="badge-new">New</span></a>
+        <a href="#section-guides">Explore guides for pest scouting</a>
+    </div>
+
+    <!-- ════════════════════════════════════════
+         SECTION 1 – Pests & Disease Alert
+    ═════════════════════════════════════════ -->
+    <div class="pest-section" id="section-alerts">
+        <h2>Pests &amp; Disease Alert</h2>
+        <p class="sub">High risk pests and diseases that might appear in your field, updated daily.</p>
+
+        <!-- Notification banner – hidden if already granted -->
+        <div class="notif-box" id="notifBox">
+            <div class="notif-icon-wrap">
+                <i class="bi bi-bell-fill"></i>
+            </div>
+            <h6>Stay informed with notifications</h6>
+            <p>To receive timely updates on nearby pests and disease, please allow us to send notifications.</p>
+            <button class="btn-allow" id="allowNotifBtn">Allow</button>
+        </div>
+
+        <!-- ── Pest cards ── -->
+        {% if alerts %}
+            {% set ns = namespace(current_crop=None) %}
+            {% for alert in alerts %}
+                {% if alert.crop != ns.current_crop %}
+                    {% if not loop.first %}</div>{% endif %}
+                    {% set ns.current_crop = alert.crop %}
+                    <div class="crop-label">
+                        <span class="emoji">{{ alert.crop_emoji or '🌱' }}</span>
+                        <span>{{ alert.crop }}</span>
+                    </div>
+                    <div class="pest-grid">
+                {% endif %}
+                <div class="pest-card">
+                    <div class="pest-img-wrap">
+                        {% if alert.image_url %}
+                            <img src="{{ alert.image_url }}" alt="{{ alert.name }}">
+                        {% else %}
+                            <div class="pest-placeholder" style="background:{% if alert.badge_type=='alert' %}#fde8e8{% else %}#e8f5e9{% endif %};">
+                                <i class="bi bi-bug{% if alert.badge_type=='alert' %}-fill{% endif %}" style="color:{% if alert.badge_type=='alert' %}#e53935{% else %}#388e3c{% endif %};"></i>
+                            </div>
+                        {% endif %}
+                        {% if alert.badge_type == 'alert' %}
+                            <span class="badge-pill badge-alert"><i class="bi bi-exclamation-triangle-fill"></i> Alert</span>
+                        {% elif alert.badge_type == 'prevention' %}
+                            <span class="badge-pill badge-prevention"><i class="bi bi-geo-alt-fill"></i> Prevention Tip</span>
+                        {% endif %}
+                    </div>
+                    <div class="pest-body">
+                        <div class="pest-category">{{ alert.category }}</div>
+                        <p class="pest-name">{{ alert.name }}</p>
+                    </div>
+                </div>
+                {% if loop.last %}</div>{% endif %}
+            {% endfor %}
+
+        {% else %}
+            <!-- Default demo content -->
+            <div class="crop-label">
+                <span class="emoji">🍅</span>
+                <span>Tomato</span>
+            </div>
+            <div class="pest-grid">
+                <div class="pest-card">
+                    <div class="pest-img-wrap">
+                        <div class="pest-placeholder" style="background:#fde8e8;">
+                            <i class="bi bi-bug-fill" style="color:#e53935;"></i>
+                        </div>
+                        <span class="badge-pill badge-alert"><i class="bi bi-exclamation-triangle-fill"></i> Alert</span>
+                    </div>
+                    <div class="pest-body">
+                        <div class="pest-category">Bacteria</div>
+                        <p class="pest-name">Bacterial Spot and Speck of Tomato</p>
+                    </div>
+                </div>
+                <div class="pest-card">
+                    <div class="pest-img-wrap">
+                        <div class="pest-placeholder" style="background:#e8f5e9;">
+                            <i class="bi bi-tree-fill" style="color:#388e3c;"></i>
+                        </div>
+                        <span class="badge-pill badge-prevention"><i class="bi bi-geo-alt-fill"></i> Prevention Tip</span>
+                    </div>
+                    <div class="pest-body">
+                        <div class="pest-category">Fungus</div>
+                        <p class="pest-name">Early Blight of Tomato</p>
+                    </div>
+                </div>
+                <div class="pest-card">
+                    <div class="pest-img-wrap">
+                        <div class="pest-placeholder" style="background:#fde8e8;">
+                            <i class="bi bi-virus" style="color:#e53935;"></i>
+                        </div>
+                        <span class="badge-pill badge-alert"><i class="bi bi-exclamation-triangle-fill"></i> Alert</span>
+                    </div>
+                    <div class="pest-body">
+                        <div class="pest-category">Virus</div>
+                        <p class="pest-name">Tomato Yellow Leaf Curl Virus</p>
+                    </div>
+                </div>
+                <div class="pest-card">
+                    <div class="pest-img-wrap">
+                        <div class="pest-placeholder" style="background:#e8f5e9;">
+                            <i class="bi bi-bug" style="color:#388e3c;"></i>
+                        </div>
+                        <span class="badge-pill badge-prevention"><i class="bi bi-geo-alt-fill"></i> Prevention Tip</span>
+                    </div>
+                    <div class="pest-body">
+                        <div class="pest-category">Insect</div>
+                        <p class="pest-name">Whitefly on Tomato</p>
+                    </div>
+                </div>
+            </div><!-- /pest-grid tomato -->
+
+            <div class="crop-label" style="margin-top:18px;">
+                <span class="emoji">🌾</span>
+                <span>Rice</span>
+            </div>
+            <div class="pest-grid">
+                <div class="pest-card">
+                    <div class="pest-img-wrap">
+                        <div class="pest-placeholder" style="background:#fde8e8;">
+                            <i class="bi bi-bug-fill" style="color:#e53935;"></i>
+                        </div>
+                        <span class="badge-pill badge-alert"><i class="bi bi-exclamation-triangle-fill"></i> Alert</span>
+                    </div>
+                    <div class="pest-body">
+                        <div class="pest-category">Fungus</div>
+                        <p class="pest-name">Rice Blast Disease</p>
+                    </div>
+                </div>
+                <div class="pest-card">
+                    <div class="pest-img-wrap">
+                        <div class="pest-placeholder" style="background:#fde8e8;">
+                            <i class="bi bi-tree" style="color:#e53935;"></i>
+                        </div>
+                        <span class="badge-pill badge-alert"><i class="bi bi-exclamation-triangle-fill"></i> Alert</span>
+                    </div>
+                    <div class="pest-body">
+                        <div class="pest-category">Insect</div>
+                        <p class="pest-name">Yellow Stem Borer</p>
+                    </div>
+                </div>
+            </div><!-- /pest-grid rice -->
+        {% endif %}
+
+        <!-- Active alerts table (admin view) -->
+        <div class="alerts-table-card mt-3">
+            <div class="card-header-row">
+                <span><i class="bi bi-table me-1"></i>All Active Alerts</span>
+                <span class="count-badge">{{ alerts|length if alerts else 6 }}</span>
+            </div>
+            <div style="overflow-x:auto;">
+                <table class="table table-hover mb-0" style="font-size:.8rem;min-width:500px;">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Pest / Disease</th>
+                            <th>Crop</th>
+                            <th>Category</th>
+                            <th>Severity</th>
+                            <th>Type</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if alerts %}
+                            {% for a in alerts %}
+                            <tr>
+                                <td class="fw-semibold">{{ a.name }}</td>
+                                <td>{{ a.crop }}</td>
+                                <td>{{ a.category }}</td>
+                                <td>
+                                    <span class="sev-{{ a.severity|lower if a.severity else 'medium' }}">
+                                        {{ a.severity or 'Medium' }}
+                                    </span>
+                                </td>
+                                <td>{{ 'Alert' if a.badge_type == 'alert' else 'Prevention Tip' }}</td>
+                                <td>
+                                    <form action="{{ url_for('delete_pest_alert', alert_id=a.id) }}" method="POST"
+                                          onsubmit="return confirm('Delete this alert?');">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-1">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr><td class="fw-semibold">Bacterial Spot &amp; Speck</td><td>Tomato</td><td>Bacteria</td><td><span class="sev-high">High</span></td><td>Alert</td><td></td></tr>
+                            <tr><td class="fw-semibold">Early Blight</td><td>Tomato</td><td>Fungus</td><td><span class="sev-medium">Medium</span></td><td>Prevention Tip</td><td></td></tr>
+                            <tr><td class="fw-semibold">Yellow Leaf Curl Virus</td><td>Tomato</td><td>Virus</td><td><span class="sev-high">High</span></td><td>Alert</td><td></td></tr>
+                            <tr><td class="fw-semibold">Whitefly</td><td>Tomato</td><td>Insect</td><td><span class="sev-medium">Medium</span></td><td>Prevention Tip</td><td></td></tr>
+                            <tr><td class="fw-semibold">Rice Blast Disease</td><td>Rice</td><td>Fungus</td><td><span class="sev-high">High</span></td><td>Alert</td><td></td></tr>
+                            <tr><td class="fw-semibold">Yellow Stem Borer</td><td>Rice</td><td>Insect</td><td><span class="sev-high">High</span></td><td>Alert</td><td></td></tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div><!-- /section-alerts -->
+
+
+    <!-- ════════════════════════════════════════
+         SECTION 2 – Field Scouting
+    ═════════════════════════════════════════ -->
+    <div class="pest-section" id="section-scouting">
+        <h2>Field scouting</h2>
+        <p class="sub">Inspect your crops regularly to detect pests and take control measures on time. Consistent field monitoring can yield 50% higher produce.</p>
+
+        <!-- Image card -->
+        <div class="scouting-card">
+            <!-- fallback gradient if no image -->
+            <div style="position:absolute;inset:0;background:linear-gradient(135deg,#1b4332 0%,#2d6a4f 60%,#52b788 100%);"></div>
+            <div class="sc-overlay"></div>
+            <div class="sc-content">
+                <p>Inspect your crops regularly to detect pests and take control measures on time. Consistent field monitoring can yield <strong>50% higher produce</strong>.</p>
+                <a href="#section-guides" class="btn-learn-more">Learn More</a>
+            </div>
+        </div>
+
+        <!-- Info callout -->
+        <div class="info-callout">
+            <i class="bi bi-info-circle-fill"></i>
+            <span>Studies across India show controlling pests alone increases yields by +1 ton/ha. Pests and diseases of rice cause an estimated 10% annual loss, about 2.5 million tons.</span>
+        </div>
+    </div><!-- /section-scouting -->
+
+
+    <!-- ════════════════════════════════════════
+         SECTION 3 – Explore guides
+    ═════════════════════════════════════════ -->
+    <div class="pest-section" id="section-guides">
+        <h2>Explore guides for pest scouting</h2>
+        <p class="sub">Learn essential tips and tricks for scouting pests in your fields. Early identification is key to preventing damage and maintaining crop health.</p>
+
+        <ul class="guide-list">
+            {% if guides %}
+                {% for g in guides %}
+                <li>
+                    <a href="{{ g.url or '#' }}" class="guide-item">
+                        <div class="guide-thumb">
+                            {% if g.image_url %}
+                                <img src="{{ g.image_url }}" alt="{{ g.name }}">
+                            {% else %}
+                                🌿
+                            {% endif %}
+                        </div>
+                        <div class="guide-info">
+                            <div class="g-name">{{ g.name }}</div>
+                            <div class="g-crop">{{ g.crop }}</div>
+                        </div>
+                        <i class="bi bi-chevron-right guide-chevron"></i>
+                    </a>
+                </li>
+                {% endfor %}
+            {% else %}
+                <li>
+                    <a href="#" class="guide-item">
+                        <div class="guide-thumb" style="background:#fce4ec;">🦋</div>
+                        <div class="guide-info">
+                            <div class="g-name">Pink bollworm and Helicoverpa bollworm</div>
+                            <div class="g-crop">Cotton</div>
+                        </div>
+                        <i class="bi bi-chevron-right guide-chevron"></i>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="guide-item">
+                        <div class="guide-thumb" style="background:#e8f5e9;">🌾</div>
+                        <div class="guide-info">
+                            <div class="g-name">Yellow stem borer</div>
+                            <div class="g-crop">Rice</div>
+                        </div>
+                        <i class="bi bi-chevron-right guide-chevron"></i>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="guide-item">
+                        <div class="guide-thumb" style="background:#fff3e0;">🍅</div>
+                        <div class="guide-info">
+                            <div class="g-name">Fruit and shoot borer</div>
+                            <div class="g-crop">Tomato / Brinjal</div>
+                        </div>
+                        <i class="bi bi-chevron-right guide-chevron"></i>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="guide-item">
+                        <div class="guide-thumb" style="background:#e3f2fd;">🌽</div>
+                        <div class="guide-info">
+                            <div class="g-name">Fall armyworm</div>
+                            <div class="g-crop">Maize</div>
+                        </div>
+                        <i class="bi bi-chevron-right guide-chevron"></i>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="guide-item">
+                        <div class="guide-thumb" style="background:#f3e5f5;">🫘</div>
+                        <div class="guide-info">
+                            <div class="g-name">Pod borer and aphids</div>
+                            <div class="g-crop">Soybean / Pulses</div>
+                        </div>
+                        <i class="bi bi-chevron-right guide-chevron"></i>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="guide-item">
+                        <div class="guide-thumb" style="background:#efebe9;">🥔</div>
+                        <div class="guide-info">
+                            <div class="g-name">Late blight and early blight</div>
+                            <div class="g-crop">Potato</div>
+                        </div>
+                        <i class="bi bi-chevron-right guide-chevron"></i>
+                    </a>
+                </li>
+            {% endif %}
+        </ul>
+    </div><!-- /section-guides -->
+
+</div><!-- /.pest-page -->
+
+
+<!-- ════════════════════════════════════════
+     Add Alert Modal
+═════════════════════════════════════════ -->
+<div class="modal fade" id="addAlertModal" tabindex="-1" aria-labelledby="addAlertModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header" style="background:#1565C0;color:#fff;">
+                <h5 class="modal-title" id="addAlertModalLabel">
+                    <i class="bi bi-plus-circle me-1"></i> Add Pest / Disease Alert
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ url_for('add_pest_alert') }}" method="POST">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Pest / Disease Name <span class="text-danger">*</span></label>
+                        <input type="text" name="name" class="form-control" placeholder="e.g. Bacterial Spot" required>
+                    </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-8">
+                            <label class="form-label fw-semibold">Crop <span class="text-danger">*</span></label>
+                            <input type="text" name="crop" class="form-control" placeholder="e.g. Tomato" required>
+                        </div>
+                        <div class="col-4">
+                            <label class="form-label fw-semibold">Emoji</label>
+                            <input type="text" name="crop_emoji" class="form-control" placeholder="🍅" maxlength="4">
+                        </div>
+                    </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label class="form-label fw-semibold">Category <span class="text-danger">*</span></label>
+                            <select name="category" class="form-select" required>
+                                <option value="">Select…</option>
+                                <option>Bacteria</option>
+                                <option>Fungus</option>
+                                <option>Virus</option>
+                                <option>Insect</option>
+                                <option>Nematode</option>
+                                <option>Weed</option>
+                                <option>Other</option>
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label fw-semibold">Severity</label>
+                            <select name="severity" class="form-select">
+                                <option value="High">High</option>
+                                <option value="Medium" selected>Medium</option>
+                                <option value="Low">Low</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Badge Type</label>
+                        <select name="badge_type" class="form-select">
+                            <option value="alert">Alert</option>
+                            <option value="prevention">Prevention Tip</option>
+                        </select>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label fw-semibold">Image URL <small class="text-muted">(optional)</small></label>
+                        <input type="url" name="image_url" class="form-control" placeholder="https://…">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-sm text-white" style="background:#1565C0;">
+                        <i class="bi bi-plus-circle"></i> Add Alert
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    var box = document.getElementById('notifBox');
+    var btn = document.getElementById('allowNotifBtn');
+
+    if (!box) return;
+
+    // Check if permission already granted → hide the banner immediately
+    if ('Notification' in window && Notification.permission === 'granted') {
+        box.style.display = 'none';
+        return;
+    }
+
+    // If browser doesn't support notifications or permission denied → hide too
+    if (!('Notification' in window) || Notification.permission === 'denied') {
+        box.style.display = 'none';
+        return;
+    }
+
+    // "Allow" click → request permission
+    if (btn) btn.addEventListener('click', function () {
+        Notification.requestPermission().then(function (permission) {
+            if (permission === 'granted') {
+                // Hide the banner with a smooth fade
+                box.style.transition = 'opacity .4s';
+                box.style.opacity = '0';
+                setTimeout(function () { box.style.display = 'none'; }, 420);
+
+                // Fire a test notification
+                new Notification('Pests & Disease Alert', {
+                    body: 'You will now receive pest alert notifications.',
+                    icon: '/static/favicon.ico'
+                });
+            } else {
+                // Permission denied – just hide banner
+                box.style.display = 'none';
+            }
+        });
+    });
+})();
+</script>
+{% endblock %}

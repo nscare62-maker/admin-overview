@@ -1,0 +1,287 @@
+{% extends "base.html" %}
+
+{% block title %}Visit Details - S2C Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div>
+            <h1 class="h3 mb-1">Field Visit Details</h1>
+            <p class="text-muted mb-0" style="font-size: 0.85rem;">Inspection report, employee attribution, client details, and verification photos</p>
+        </div>
+        <a href="{{ url_for('visits') }}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left me-1"></i> Back to Visits
+        </a>
+    </div>
+
+    <!-- Employee Info Card -->
+    <div class="card mb-4">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+            <span class="fw-semibold"><i class="bi bi-person text-primary me-2"></i>Employee Information</span>
+            <span class="badge badge-subtle-neutral">Record ID: {{ visit.id }}</span>
+        </div>
+        <div class="card-body">
+            <div class="d-flex align-items-center gap-4 flex-wrap">
+                <!-- Employee Photo / Initials Fallback (Consistent 64x64px to prevent layout shift) -->
+                <div class="position-relative">
+                    {% if visit.employeePhoto %}
+                    <img src="{{ visit.employeePhoto }}" 
+                         alt="{{ visit.employeeName }}" 
+                         class="avatar-img-lg" 
+                         width="64" 
+                         height="64" 
+                         onerror="this.onerror=null; this.classList.add('d-none'); this.nextElementSibling.classList.remove('d-none');">
+                    <div class="avatar-fallback-lg d-none">
+                        {{ visit.employeeInitials }}
+                    </div>
+                    {% else %}
+                    <div class="avatar-fallback-lg">
+                        {{ visit.employeeInitials }}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="row g-3 flex-fill">
+                    <div class="col-sm-6 col-md-3">
+                        <div class="text-muted small">Employee Name</div>
+                        <div class="fw-semibold text-dark fs-6">{{ visit.employeeName }}</div>
+                    </div>
+                    <div class="col-sm-6 col-md-3">
+                        <div class="text-muted small">Employee ID</div>
+                        <div class="font-monospace text-primary fw-medium">{{ visit.employeeId }}</div>
+                    </div>
+                    <div class="col-sm-6 col-md-3">
+                        <div class="text-muted small">Contact Phone</div>
+                        <div class="text-secondary">{{ visit.employeePhone }}</div>
+                    </div>
+                    <div class="col-sm-6 col-md-3">
+                        <div class="text-muted small">Role Classification</div>
+                        <div>
+                            {% if visit.employeeRole == 'field_staff' %}
+                            <span class="badge badge-subtle-success"><i class="bi bi-geo-alt me-1"></i>Field Staff</span>
+                            {% elif visit.employeeRole == 'office_staff' %}
+                            <span class="badge badge-subtle-info"><i class="bi bi-building me-1"></i>Office Staff</span>
+                            {% else %}
+                            <span class="badge badge-subtle-neutral">{{ visit.employeeRole }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Visit & Photo Details Grid -->
+    <div class="row g-4 mb-4">
+        <!-- Lead & Visit Information -->
+        <div class="col-lg-6">
+            <div class="card h-100">
+                <div class="card-header py-3">
+                    <span class="fw-semibold"><i class="bi bi-info-circle text-primary me-2"></i>Visit Information</span>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3 mb-3">
+                        <div class="col-6">
+                            <div class="text-muted small">Lead / Client Name</div>
+                            <div class="fw-semibold text-dark fs-6">{{ visit.leadName }}</div>
+                        </div>
+                        <div class="col-6">
+                            <div class="text-muted small">Lead Phone</div>
+                            <div class="text-secondary">{{ visit.leadPhone }}</div>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-3 pt-3 border-top">
+                        <div class="col-6">
+                            <div class="text-muted small">Visit Date</div>
+                            <div class="fw-medium text-dark">{{ visit.createdAt|timestamp_to_date }}</div>
+                        </div>
+                        <div class="col-6">
+                            <div class="text-muted small">Visit Time</div>
+                            <div class="fw-medium text-dark">{{ visit.createdAt|timestamp_to_time }}</div>
+                        </div>
+                    </div>
+
+                    {% if visit.latitude and visit.longitude %}
+                    <div class="pt-3 border-top mb-3">
+                        <div class="text-muted small">GPS Coordinates</div>
+                        <div class="font-monospace text-secondary mb-1">
+                            {{ visit.latitude|format_coord(6) }}, {{ visit.longitude|format_coord(6) }}
+                        </div>
+                        <a href="https://www.google.com/maps?q={{ visit.latitude }},{{ visit.longitude }}" 
+                           target="_blank" 
+                           rel="noopener noreferrer" 
+                           class="btn btn-outline-secondary btn-sm py-1 px-2" 
+                           style="font-size: 0.75rem;">
+                            <i class="bi bi-box-arrow-up-right me-1"></i>Open in Google Maps
+                        </a>
+                    </div>
+                    {% endif %}
+
+                    {% if visit.notes %}
+                    <div class="pt-3 border-top">
+                        <div class="text-muted small mb-1">Field Visit Notes</div>
+                        <div class="p-3 bg-light rounded text-secondary" style="font-size: 0.85rem; line-height: 1.5;">
+                            {{ visit.notes }}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Verification Photos Panel -->
+        <div class="col-lg-6">
+            <div class="card h-100">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <span class="fw-semibold"><i class="bi bi-camera text-primary me-2"></i>Verification Photos</span>
+                </div>
+                <div class="card-body">
+                    <!-- Photo Selection Buttons -->
+                    <div class="btn-group mb-3 w-100" role="group" aria-label="Work photo selection">
+                        {% if visit.photo %}
+                        <button type="button" class="btn btn-sm btn-outline-primary active" data-photo-target="visit-photo-panel" aria-pressed="true">
+                            <i class="bi bi-camera-fill me-1"></i> Visit Photo
+                        </button>
+                        {% endif %}
+                        <button type="button" class="btn btn-sm btn-outline-primary {{ 'active' if not visit.photo else '' }}" data-photo-target="start-work-photo" aria-pressed="{{ 'true' if not visit.photo else 'false' }}">
+                            <i class="bi bi-play-circle me-1"></i> Clock-In Photo
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-primary" data-photo-target="end-work-photo" aria-pressed="false">
+                            <i class="bi bi-stop-circle me-1"></i> Clock-Out Photo
+                        </button>
+                    </div>
+
+                    <!-- Visit Photo Panel -->
+                    {% if visit.photo %}
+                    <div id="visit-photo-panel" class="work-photo-panel">
+                        <div class="visit-photo-container">
+                            <img src="{{ visit.photo }}" 
+                                 alt="Visit Verification Photo" 
+                                 onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'text-center text-muted p-4\'><i class=\'bi bi-image fs-1 d-block mb-2\'></i>Photo could not be loaded</div>';">
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Start of Work Photo Panel -->
+                    <div id="start-work-photo" class="work-photo-panel {{ 'd-none' if visit.photo else '' }}">
+                        {% if visit.startPhoto %}
+                        <div class="visit-photo-container">
+                            <img src="{{ visit.startPhoto }}" 
+                                 alt="Start of work verification"
+                                 onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'text-center text-muted p-4\'><i class=\'bi bi-image fs-1 d-block mb-2\'></i>Start photo unavailable</div>';">
+                        </div>
+                        {% else %}
+                        <div class="p-4 text-center bg-light rounded text-muted">
+                            <i class="bi bi-camera-slash fs-2 d-block mb-2"></i>
+                            No clock-in photo available for this session.
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- End of Work Photo Panel -->
+                    <div id="end-work-photo" class="work-photo-panel d-none">
+                        {% if visit.endPhoto %}
+                        <div class="visit-photo-container">
+                            <img src="{{ visit.endPhoto }}" 
+                                 alt="End of work verification"
+                                 onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'text-center text-muted p-4\'><i class=\'bi bi-image fs-1 d-block mb-2\'></i>End photo unavailable</div>';">
+                        </div>
+                        {% else %}
+                        <div class="p-4 text-center bg-light rounded text-muted">
+                            <i class="bi bi-camera-slash fs-2 d-block mb-2"></i>
+                            No clock-out photo available for this session.
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Map View if points exist -->
+    {% if visit.routePoints %}
+    <div class="card mb-4">
+        <div class="card-header py-3">
+            <span class="fw-semibold"><i class="bi bi-map text-primary me-2"></i>Field Route &amp; Movement Map</span>
+        </div>
+        <div class="card-body p-0">
+            {% if azure_maps_key %}
+            <div id="visit-map" style="height: 380px; width: 100%;"></div>
+            {% else %}
+            <div class="p-4 text-muted text-center">
+                Azure Maps is not configured. Add <code>AZURE_MAPS_SUBSCRIPTION_KEY</code> to display map routes.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if azure_maps_key %}
+    <link rel="stylesheet" href="https://atlas.microsoft.com/sdk/javascript/mapcontrol/3/atlas.min.css" />
+    <script src="https://atlas.microsoft.com/sdk/javascript/mapcontrol/3/atlas.min.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const routePoints = {{ visit.routePoints|tojson }};
+        if (!routePoints || routePoints.length === 0) return;
+
+        const map = new atlas.Map('visit-map', {
+            center: [routePoints[0].longitude, routePoints[0].latitude],
+            zoom: 14,
+            authOptions: {
+                authType: 'subscriptionKey',
+                subscriptionKey: '{{ azure_maps_key }}'
+            }
+        });
+
+        map.events.add('ready', function () {
+            const datasource = new atlas.source.DataSource();
+            map.sources.add(datasource);
+
+            const coordinates = routePoints.map(point => [point.longitude, point.latitude]);
+            if (coordinates.length > 1) {
+                datasource.add(new atlas.data.LineString(coordinates));
+                map.layers.add(new atlas.layer.LineLayer(datasource, null, {
+                    strokeColor: '#2563eb',
+                    strokeWidth: 4
+                }));
+            }
+
+            routePoints.forEach((point, index) => {
+                if (point.label === 'Employee movement') return;
+                const markerColor = index === 0 ? '#16a34a' : (index === routePoints.length - 1 ? '#dc2626' : '#2563eb');
+                const marker = new atlas.HtmlMarker({
+                    color: markerColor,
+                    text: String(index + 1),
+                    position: [point.longitude, point.latitude]
+                });
+                map.markers.add(marker);
+            });
+        });
+    });
+    </script>
+    {% endif %}
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    // Work Photo Tab Switcher
+    document.querySelectorAll('[data-photo-target]').forEach(button => {
+        button.addEventListener('click', function () {
+            document.querySelectorAll('[data-photo-target]').forEach(b => {
+                const isActive = b === button;
+                b.classList.toggle('active', isActive);
+                b.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+            });
+
+            document.querySelectorAll('.work-photo-panel').forEach(panel => {
+                panel.classList.toggle('d-none', panel.id !== button.dataset.photoTarget);
+            });
+        });
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,263 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - S2C Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div>
+            <h1 class="h3 mb-1">Administrative Overview</h1>
+            <p class="text-muted mb-0" style="font-size: 0.85rem;">Workforce attendance, active sessions, and operational field data</p>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <span class="badge badge-subtle-neutral px-3 py-2">
+                <i class="bi bi-clock me-1"></i>Updated {{ now().strftime('%I:%M %p') }}
+            </span>
+            <a href="{{ url_for('attendance') }}" class="btn btn-primary btn-sm">
+                <i class="bi bi-calendar-check me-1"></i>Today's Attendance
+            </a>
+        </div>
+    </div>
+
+    <!-- Primary KPI Metric Cards (4 Columns) -->
+    <div class="row g-3 mb-4">
+        <div class="col-sm-6 col-xl-3">
+            <div class="metric-card h-100">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="metric-label">Total Employees</div>
+                        <div class="metric-value">{{ stats.total_employees or 0 }}</div>
+                        <div class="metric-subtext">
+                            <span class="text-success"><i class="bi bi-check-circle-fill me-1"></i>Registered staff</span>
+                        </div>
+                    </div>
+                    <div class="p-2 rounded bg-light text-primary">
+                        <i class="bi bi-people fs-4"></i>
+                    </div>
+                </div>
+                <div class="mt-3 pt-2 border-top">
+                    <a href="{{ url_for('employees') }}" class="text-decoration-none fw-medium text-primary d-inline-flex align-items-center" style="font-size: 0.8rem;">
+                        View employee directory <i class="bi bi-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <div class="metric-card h-100">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="metric-label">Active Sessions</div>
+                        <div class="metric-value text-primary">{{ stats.active_sessions or 0 }}</div>
+                        <div class="metric-subtext">
+                            <span class="badge badge-subtle-success">Live Tracking</span>
+                        </div>
+                    </div>
+                    <div class="p-2 rounded bg-light text-success">
+                        <i class="bi bi-stopwatch fs-4"></i>
+                    </div>
+                </div>
+                <div class="mt-3 pt-2 border-top">
+                    <a href="{{ url_for('sessions', status='ACTIVE') }}" class="text-decoration-none fw-medium text-primary d-inline-flex align-items-center" style="font-size: 0.8rem;">
+                        Monitor live sessions <i class="bi bi-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <div class="metric-card h-100">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="metric-label">Today's Attendance</div>
+                        <div class="metric-value">{{ stats.today_attendance or 0 }}</div>
+                        <div class="metric-subtext text-muted">
+                            <span>Visits recorded today: <strong>{{ stats.today_visits or 0 }}</strong></span>
+                        </div>
+                    </div>
+                    <div class="p-2 rounded bg-light text-info">
+                        <i class="bi bi-calendar-check fs-4"></i>
+                    </div>
+                </div>
+                <div class="mt-3 pt-2 border-top">
+                    <a href="{{ url_for('attendance') }}" class="text-decoration-none fw-medium text-primary d-inline-flex align-items-center" style="font-size: 0.8rem;">
+                        Review daily records <i class="bi bi-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <div class="metric-card h-100">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="metric-label">Pending Permissions</div>
+                        <div class="metric-value {{ 'text-warning' if stats.pending_permissions else 'text-dark' }}">{{ stats.pending_permissions or 0 }}</div>
+                        <div class="metric-subtext">
+                            {% if stats.pending_permissions %}
+                            <span class="badge badge-subtle-warning">Action Required</span>
+                            {% else %}
+                            <span class="text-success"><i class="bi bi-check2 me-1"></i>All reviewed</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="p-2 rounded bg-light text-warning">
+                        <i class="bi bi-file-earmark-text fs-4"></i>
+                    </div>
+                </div>
+                <div class="mt-3 pt-2 border-top">
+                    <a href="{{ url_for('permissions', status='PENDING') }}" class="text-decoration-none fw-medium text-primary d-inline-flex align-items-center" style="font-size: 0.8rem;">
+                        Manage requests <i class="bi bi-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Secondary Operations Summary (3 Balanced Columns) -->
+    <div class="row g-3 mb-4">
+        <div class="col-lg-4">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span class="fw-semibold"><i class="bi bi-check2-square text-primary me-2"></i>Task Management</span>
+                    <a href="{{ url_for('tasks') }}" class="text-decoration-none text-muted" style="font-size: 0.75rem;">View All</a>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <div class="metric-label mb-1">Total Assigned Tasks</div>
+                            <div class="h3 mb-0">{{ stats.total_tasks or 0 }}</div>
+                        </div>
+                        <div class="text-end">
+                            <div class="badge {{ 'badge-subtle-warning' if stats.pending_tasks else 'badge-subtle-success' }} mb-1">
+                                {{ stats.pending_tasks or 0 }} Pending
+                            </div>
+                            <div class="text-muted" style="font-size: 0.75rem;">Requires completion</div>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <a href="{{ url_for('assign_field_task') }}" class="btn btn-outline-secondary btn-sm flex-fill">
+                            <i class="bi bi-plus-circle me-1"></i>Assign Field
+                        </a>
+                        <a href="{{ url_for('assign_office_task') }}" class="btn btn-outline-secondary btn-sm flex-fill">
+                            <i class="bi bi-plus-circle me-1"></i>Assign Office
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span class="fw-semibold"><i class="bi bi-geo-alt text-success me-2"></i>Field Visits</span>
+                    <a href="{{ url_for('visits') }}" class="text-decoration-none text-muted" style="font-size: 0.75rem;">View All</a>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <div class="metric-label mb-1">Total Recorded Visits</div>
+                            <div class="h3 mb-0">{{ stats.total_visits or 0 }}</div>
+                        </div>
+                        <div class="text-end">
+                            <div class="badge badge-subtle-info mb-1">{{ stats.today_visits or 0 }} Today</div>
+                            <div class="text-muted" style="font-size: 0.75rem;">Logged field check-ins</div>
+                        </div>
+                    </div>
+                    <a href="{{ url_for('visits') }}" class="btn btn-outline-secondary btn-sm w-100">
+                        <i class="bi bi-card-list me-1"></i>Review Field Visits &amp; Photos
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span class="fw-semibold"><i class="bi bi-stopwatch text-info me-2"></i>Work Sessions</span>
+                    <a href="{{ url_for('sessions') }}" class="text-decoration-none text-muted" style="font-size: 0.75rem;">View All</a>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <div class="metric-label mb-1">Total History Sessions</div>
+                            <div class="h3 mb-0">{{ stats.total_sessions or 0 }}</div>
+                        </div>
+                        <div class="text-end">
+                            <div class="badge badge-subtle-success mb-1">{{ stats.active_sessions or 0 }} Active Now</div>
+                            <div class="text-muted" style="font-size: 0.75rem;">Currently on duty</div>
+                        </div>
+                    </div>
+                    <a href="{{ url_for('sessions') }}" class="btn btn-outline-secondary btn-sm w-100">
+                        <i class="bi bi-clock-history me-1"></i>View Work Sessions Timeline
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Balanced Operational Directory Links -->
+    <div class="card">
+        <div class="card-header">
+            <span class="fw-semibold">Operational Modules</span>
+        </div>
+        <div class="card-body p-0">
+            <div class="row g-0">
+                <div class="col-sm-6 col-md-3 border-end border-bottom">
+                    <a href="{{ url_for('travel_expenses') }}" class="d-block p-3 text-decoration-none text-dark hover-bg-light">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="p-2 rounded bg-light text-primary">
+                                <i class="bi bi-car-front fs-5"></i>
+                            </div>
+                            <div>
+                                <div class="fw-semibold" style="font-size: 0.85rem;">Travel Expenses</div>
+                                <div class="text-muted" style="font-size: 0.75rem;">Mileage &amp; route reimbursements</div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-sm-6 col-md-3 border-end border-bottom">
+                    <a href="{{ url_for('field_measurements') }}" class="d-block p-3 text-decoration-none text-dark hover-bg-light">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="p-2 rounded bg-light text-success">
+                                <i class="bi bi-rulers fs-5"></i>
+                            </div>
+                            <div>
+                                <div class="fw-semibold" style="font-size: 0.85rem;">Field Measurements</div>
+                                <div class="text-muted" style="font-size: 0.75rem;">GPS polygon area measurements</div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-sm-6 col-md-3 border-end border-bottom">
+                    <a href="{{ url_for('pest_alerts') }}" class="d-block p-3 text-decoration-none text-dark hover-bg-light">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="p-2 rounded bg-light text-danger">
+                                <i class="bi bi-bug fs-5"></i>
+                            </div>
+                            <div>
+                                <div class="fw-semibold" style="font-size: 0.85rem;">Pest &amp; Disease Alerts</div>
+                                <div class="text-muted" style="font-size: 0.75rem;">Agricultural advisories &amp; guides</div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-sm-6 col-md-3 border-bottom">
+                    <a href="{{ url_for('reports') }}" class="d-block p-3 text-decoration-none text-dark hover-bg-light">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="p-2 rounded bg-light text-secondary">
+                                <i class="bi bi-bar-chart fs-5"></i>
+                            </div>
+                            <div>
+                                <div class="fw-semibold" style="font-size: 0.85rem;">Monthly Reports</div>
+                                <div class="text-muted" style="font-size: 0.75rem;">Attendance &amp; performance metrics</div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

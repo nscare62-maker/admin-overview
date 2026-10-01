@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+{% block title %}{{ employee.name }} - Employee Details{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="bi bi-person-badge"></i> {{ employee.name }}</h1>
+        <div class="d-flex gap-2">
+            <a href="{{ url_for('edit_employee', employee_id=employee.id) }}" class="btn btn-warning">
+                <i class="bi bi-pencil-square"></i> Edit Name / ID
+            </a>
+            <a href="{{ url_for('employees') }}" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Back</a>
+        </div>
+    </div>
+    
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white"><h5 class="mb-0">Employee Info</h5></div>
+                <div class="card-body">
+                    <p><strong>ID:</strong> <code>{{ employee.id }}</code></p>
+                    <p><strong>Phone:</strong> {{ employee.phone }}</p>
+                    <p><strong>Role:</strong> <span class="badge bg-info">{{ employee.role or 'Employee' }}</span></p>
+                </div>
+            </div>
+            
+            <!-- Password Management Card -->
+            <div class="card shadow mt-3">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0"><i class="bi bi-key"></i> Password Management</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Password Status -->
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Password Status:</strong></label>
+                        <div class="alert alert-success mb-0">
+                            <i class="bi bi-shield-check"></i> Password is encrypted and secure
+                            <br>
+                            <small class="text-muted">Passwords are hashed using Base64 encoding with salt</small>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <!-- Reset Password Form -->
+                    <form method="POST" action="{{ url_for('reset_password', employee_id=employee.id) }}" onsubmit="return confirm('Are you sure you want to reset this password?');">
+                        <div class="mb-3">
+                            <label for="new_password" class="form-label"><strong>New Password:</strong></label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="new_password" 
+                                   name="new_password" 
+                                   placeholder="Enter new password"
+                                   minlength="4"
+                                   required>
+                            <small class="text-muted">Minimum 4 characters (will be encrypted automatically)</small>
+                        </div>
+                        <button type="submit" class="btn btn-danger w-100">
+                            <i class="bi bi-arrow-repeat"></i> Reset Password
+                        </button>
+                    </form>
+                    
+                    {% if employee.passwordUpdatedAt %}
+                    <div class="alert alert-info mt-3 mb-0">
+                        <small>
+                            <strong>Last Updated:</strong><br>
+                            {{ employee.passwordUpdatedAt }}<br>
+                            <strong>By:</strong> {{ employee.passwordUpdatedBy or 'Unknown' }}
+                        </small>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            {% if monthly_summary %}
+            <div class="card shadow mt-3">
+                <div class="card-header bg-info text-white"><h5 class="mb-0">This Month</h5></div>
+                <div class="card-body">
+                    <p><strong>Work Days:</strong> {{ monthly_summary.totalWorkDays }}</p>
+                    <p><strong>On Time:</strong> <span class="text-success">{{ monthly_summary.onTimeDays }}</span></p>
+                    <p><strong>Late Starts:</strong> <span class="text-warning">{{ monthly_summary.lateStartDays }}</span></p>
+                    <p><strong>Half Days:</strong> <span class="text-danger">{{ monthly_summary.halfDays }}</span></p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="col-md-8">
+            <div class="card shadow mb-3">
+                <div class="card-header bg-success text-white"><h5 class="mb-0">Recent Sessions</h5></div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead><tr><th>Date</th><th>Work Type</th><th>Duration</th><th>Status</th></tr></thead>
+                            <tbody>
+                                {% for sess in sessions %}
+                                <tr>
+                                    <td>{{ sess.startTime|timestamp_to_date }}</td>
+                                    <td><span class="badge bg-secondary">{{ sess.workType }}</span></td>
+                                    <td>{{ (sess.totalWorkTimeMs / 3600000)|round(1) }}h</td>
+                                    <td><span class="badge bg-{{ 'success' if sess.status == 'ACTIVE' else 'secondary' }}">{{ sess.status }}</span></td>
+                                </tr>
+                                {% else %}
+                                <tr><td colspan="4" class="text-center text-muted">No sessions</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card shadow">
+                <div class="card-header bg-warning text-white"><h5 class="mb-0">Recent Attendance</h5></div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead><tr><th>Date</th><th>Start Time</th><th>Status</th><th>Late By</th></tr></thead>
+                            <tbody>
+                                {% for att in attendance %}
+                                <tr>
+                                    <td>{{ att.date }}</td>
+                                    <td>{{ att.startTime|timestamp_to_time }}</td>
+                                    <td><span class="badge bg-{{ 'success' if att.status == 'ON_TIME' else ('warning' if att.status == 'LATE_START' else 'danger') }}">{{ att.status }}</span></td>
+                                    <td>{{ att.lateByMinutes }}m</td>
+                                </tr>
+                                {% else %}
+                                <tr><td colspan="4" class="text-center text-muted">No attendance records</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

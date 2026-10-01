@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+
+{% block title %}Attendance - S2C Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div>
+            <h1 class="h3 mb-1">Attendance Management</h1>
+            <p class="text-muted mb-0" style="font-size: 0.85rem;">Daily attendance logs, check-in timestamps, and work hours</p>
+        </div>
+        <div class="d-flex gap-2 align-items-center">
+            <span class="badge badge-subtle-neutral px-3 py-2">
+                {{ attendance|length }} Record{% if attendance|length != 1 %}s{% endif %}
+            </span>
+        </div>
+    </div>
+
+    <!-- Filter Card -->
+    <div class="card mb-4">
+        <div class="card-body py-3">
+            <form method="GET" id="attendanceFilterForm" class="row g-3 align-items-end">
+                <!-- Date Filter (Immediate change reload) -->
+                <div class="col-sm-6 col-md-3">
+                    <label for="attendanceDate" class="form-label text-muted fw-medium" style="font-size: 0.785rem;">
+                        <i class="bi bi-calendar3 me-1"></i> Date (Auto-reloads)
+                    </label>
+                    <input type="date" 
+                           id="attendanceDate" 
+                           name="date" 
+                           class="form-control" 
+                           value="{{ date_filter if date_filter != 'all' else '' }}" 
+                           onchange="document.getElementById('attendanceFilterForm').submit();"
+                           title="Select date to load records immediately">
+                </div>
+
+                <!-- Status Filter (Immediate change reload) -->
+                <div class="col-sm-6 col-md-3">
+                    <label for="attendanceStatus" class="form-label text-muted fw-medium" style="font-size: 0.785rem;">
+                        <i class="bi bi-funnel me-1"></i> Punctuality Status
+                    </label>
+                    <select id="attendanceStatus" 
+                            name="status" 
+                            class="form-select" 
+                            onchange="document.getElementById('attendanceFilterForm').submit();">
+                        <option value="all" {{ 'selected' if status_filter == 'all' else '' }}>All Statuses</option>
+                        <option value="ON_TIME" {{ 'selected' if status_filter == 'ON_TIME' else '' }}>On Time</option>
+                        <option value="LATE_START" {{ 'selected' if status_filter == 'LATE_START' else '' }}>Late Start</option>
+                        <option value="HALF_DAY" {{ 'selected' if status_filter == 'HALF_DAY' else '' }}>Half Day</option>
+                    </select>
+                </div>
+
+                <!-- Real-time Quick Search Input -->
+                <div class="col-md-5">
+                    <label for="attendanceQuickSearch" class="form-label text-muted fw-medium" style="font-size: 0.785rem;">
+                        <i class="bi bi-search me-1"></i> Live Quick Search
+                    </label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-white text-muted"><i class="bi bi-search"></i></span>
+                        <input type="text" 
+                               id="attendanceQuickSearch" 
+                               class="form-control" 
+                               placeholder="Type employee name or ID to filter..." 
+                               autocomplete="off">
+                    </div>
+                </div>
+
+                <!-- Reset / Clear Button -->
+                <div class="col-md-1">
+                    <a href="{{ url_for('attendance') }}" class="btn btn-outline-secondary w-100" title="Reset all filters">
+                        <i class="bi bi-arrow-counterclockwise"></i>
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Attendance Table Card -->
+    <div class="card">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0" id="attendanceTable">
+                    <thead>
+                        <tr>
+                            <th>Employee</th>
+                            <th>Date</th>
+                            <th>Clock In</th>
+                            <th>Clock Out</th>
+                            <th>Duration</th>
+                            <th>Punctuality</th>
+                            <th>Late Delay</th>
+                            <th>Approval</th>
+                            <th style="width: 100px;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for att in attendance %}
+                        <tr>
+                            <td>
+                                <div class="fw-semibold text-dark">{{ att.employeeName }}</div>
+                                <small class="text-muted font-monospace">{{ att.employeeId or '' }}</small>
+                            </td>
+                            <td class="text-secondary">{{ att.date }}</td>
+                            <td>
+                                <div>{{ att.startTime|timestamp_to_time }}</div>
+                                <small class="text-muted">{{ att.startTime|timestamp_to_date }}</small>
+                            </td>
+                            <td>
+                                {% if att.endTime %}
+                                    <div>{{ att.endTime|timestamp_to_time }}</div>
+                                    <small class="text-muted">{{ att.endTime|timestamp_to_date }}</small>
+                                {% else %}
+                                    <span class="badge badge-subtle-neutral">In Progress</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if att.workDurationHours %}
+                                    <span class="fw-semibold">{{ att.workDurationHours }} hrs</span>
+                                    {% if att.workDurationHours >= 8 %}
+                                        <i class="bi bi-check-circle text-success ms-1" title="Full work day completed"></i>
+                                    {% elif att.workDurationHours >= 4 %}
+                                        <i class="bi bi-dash-circle text-warning ms-1" title="Half day"></i>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge {{ 'badge-subtle-success' if att.status == 'ON_TIME' else ('badge-subtle-warning' if att.status == 'LATE_START' else 'badge-subtle-danger') }}">
+                                    {{ att.status }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if att.lateByMinutes and att.lateByMinutes > 0 %}
+                                    <span class="text-warning fw-medium">{{ att.lateByMinutes|format_minutes }}</span>
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge {{ 'badge-subtle-success' if att.approvalStatus == 'APPROVED' else ('badge-subtle-warning' if att.approvalStatus == 'PENDING' else 'badge-subtle-danger') }}">
+                                    {{ att.approvalStatus }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if att.approvalStatus == 'PENDING' %}
+                                <div class="d-flex gap-1">
+                                    <form method="POST" action="{{ url_for('approve_attendance', record_id=att.id) }}" class="d-inline">
+                                        <button type="submit" class="btn btn-sm btn-outline-success p-1 px-2" title="Approve attendance">
+                                            <i class="bi bi-check-lg"></i>
+                                        </button>
+                                    </form>
+                                    <form method="POST" action="{{ url_for('reject_attendance', record_id=att.id) }}" class="d-inline">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger p-1 px-2" title="Reject attendance">
+                                            <i class="bi bi-x-lg"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                                {% else %}
+                                <span class="text-muted small">-</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr class="empty-state-row">
+                            <td colspan="9" class="text-center text-muted py-5">
+                                <i class="bi bi-calendar-x fs-3 d-block mb-2 text-muted"></i>
+                                No attendance records found for the selected date and status filters.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card-footer py-2 text-muted d-flex justify-content-between align-items-center" style="font-size: 0.785rem;">
+            <span>Showing {{ attendance|length }} attendance records</span>
+            <span><i class="bi bi-lightning-charge me-1"></i>Filters update instantly on selection</span>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+{% block title %}Assign Office Staff Task - S2C Admin{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="bi bi-building"></i> Assign Office Staff Task</h1>
+        <a href="{{ url_for('tasks') }}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Back to Tasks
+        </a>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card shadow">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="bi bi-building"></i> Office Staff Task Information</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        <!-- Title -->
+                        <div class="mb-3">
+                            <label for="title" class="form-label">
+                                <i class="bi bi-card-heading"></i> Task Title <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control" id="title" name="title" required
+                                   placeholder="e.g., Prepare Monthly Report">
+                            <small class="text-muted">Clear, specific title for the office task</small>
+                        </div>
+                        
+                        <!-- Description -->
+                        <div class="mb-3">
+                            <label for="description" class="form-label">
+                                <i class="bi bi-text-paragraph"></i> Description
+                            </label>
+                            <textarea class="form-control" id="description" name="description" 
+                                      rows="4" placeholder="Task details, instructions, requirements..."></textarea>
+                        </div>
+                        
+                        <hr>
+                        
+                        <!-- Assignment Type -->
+                        <div class="mb-3">
+                            <label class="form-label">
+                                <i class="bi bi-people"></i> Assignment Type <span class="text-danger">*</span>
+                            </label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="assignmentType" id="assignSpecific" 
+                                       value="specific" checked onchange="toggleAssignment()">
+                                <label class="form-check-label" for="assignSpecific">
+                                    <strong>Assign to Specific Employee</strong>
+                                    <br><small class="text-muted">Task assigned to one specific office staff member</small>
+                                </label>
+                            </div>
+                            <div class="form-check mt-2">
+                                <input class="form-check-input" type="radio" name="assignmentType" id="assignAll" 
+                                       value="all" onchange="toggleAssignment()">
+                                <label class="form-check-label" for="assignAll">
+                                    <strong>Assign to All Office Staff</strong>
+                                    <br><small class="text-muted">Task visible to all office staff members</small>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <!-- Assigned To (Specific Employee) -->
+                        <div class="mb-3" id="specificEmployeeDiv">
+                            <label for="assignedTo" class="form-label">
+                                <i class="bi bi-person"></i> Assign To Office Staff <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select" id="assignedTo" name="assignedTo">
+                                <option value="">Select Office Staff Employee...</option>
+                                {% for emp in employees if emp.role == 'office_staff' %}
+                                <option value="{{ emp.employeeId }}">
+                                    {{ emp.name }} ({{ emp.employeeId }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <small class="text-muted">Select the office staff member to assign this task to</small>
+                        </div>
+                        
+                        <div class="row">
+                            <!-- Priority -->
+                            <div class="col-md-6 mb-3">
+                                <label for="priority" class="form-label">
+                                    <i class="bi bi-flag"></i> Priority
+                                </label>
+                                <select class="form-select" id="priority" name="priority">
+                                    <option value="Low">Low</option>
+                                    <option value="Medium" selected>Medium</option>
+                                    <option value="High">High</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Due Date -->
+                            <div class="col-md-6 mb-3">
+                                <label for="dueDate" class="form-label">
+                                    <i class="bi bi-calendar-check"></i> Due Date
+                                </label>
+                                <input type="date" class="form-control" id="dueDate" name="dueDate">
+                            </div>
+                        </div>
+                        
+                        <hr>
+                        <h6 class="mb-3"><i class="bi bi-info-circle"></i> Additional Information (Optional)</h6>
+                        
+                        <div class="row">
+                            <!-- Contact Name -->
+                            <div class="col-md-6 mb-3">
+                                <label for="contactName" class="form-label">
+                                    <i class="bi bi-person-badge"></i> Contact Name
+                                </label>
+                                <input type="text" class="form-control" id="contactName" name="contactName"
+                                       placeholder="Related contact name">
+                            </div>
+                            
+                            <!-- Contact Number -->
+                            <div class="col-md-6 mb-3">
+                                <label for="contactNumber" class="form-label">
+                                    <i class="bi bi-telephone"></i> Contact Number
+                                </label>
+                                <input type="tel" class="form-control" id="contactNumber" name="contactNumber"
+                                       placeholder="Phone number">
+                            </div>
+                        </div>
+                        
+                        <!-- Service/Category -->
+                        <div class="mb-3">
+                            <label for="service" class="form-label">
+                                <i class="bi bi-tag"></i> Category/Type
+                            </label>
+                            <input type="text" class="form-control" id="service" name="service"
+                                   placeholder="e.g., Report, Data Entry, Customer Service">
+                        </div>
+                        
+                        <hr>
+                        
+                        <!-- Submit Buttons -->
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-info text-white">
+                                <i class="bi bi-check-circle"></i> Assign Office Task
+                            </button>
+                            <a href="{{ url_for('tasks') }}" class="btn btn-secondary">
+                                <i class="bi bi-x-circle"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Help Card -->
+            <div class="card shadow mt-3">
+                <div class="card-header bg-warning text-dark">
+                    <h6 class="mb-0"><i class="bi bi-question-circle"></i> Office Staff Task Guidelines</h6>
+                </div>
+                <div class="card-body">
+                    <ul class="mb-0">
+                        <li><strong>Specific Assignment:</strong> Task assigned to one employee only</li>
+                        <li><strong>All Office Staff:</strong> Task visible to all office staff members</li>
+                        <li>Office tasks typically include: reports, data entry, customer calls, documentation</li>
+                        <li>Task appears in employee's mobile app task tracker</li>
+                        <li>Employee can update status and track progress</li>
+                        <li>Call tracking available for customer service tasks</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleAssignment() {
+    const assignmentType = document.querySelector('input[name="assignmentType"]:checked').value;
+    const specificDiv = document.getElementById('specificEmployeeDiv');
+    const assignedToSelect = document.getElementById('assignedTo');
+    
+    if (assignmentType === 'all') {
+        specificDiv.style.display = 'none';
+        assignedToSelect.removeAttribute('required');
+        assignedToSelect.value = '';
+    } else {
+        specificDiv.style.display = 'block';
+        assignedToSelect.setAttribute('required', 'required');
+    }
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    toggleAssignment();
+});
+</script>
+{% endblock %}

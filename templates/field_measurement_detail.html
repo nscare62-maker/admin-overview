@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+
+{% block title %}Field Measurement Details - S2C Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="bi bi-rulers"></i> Field Measurement Details</h1>
+        <a href="{{ url_for('field_measurements') }}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Back to List
+        </a>
+    </div>
+
+    <div class="row g-4">
+        <!-- Main Info Card -->
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-info-circle"></i> Measurement Information</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-borderless">
+                        <tr>
+                            <th width="40%">Measurement ID:</th>
+                            <td><code>{{ measurement.measurementId }}</code></td>
+                        </tr>
+                        <tr>
+                            <th>Employee:</th>
+                            <td>
+                                <strong>{{ measurement.employeeName }}</strong><br>
+                                <small class="text-muted">{{ measurement.employeeId }}</small>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Date:</th>
+                            <td><strong>{{ measurement.date }}</strong></td>
+                        </tr>
+                        <tr>
+                            <th>Time:</th>
+                            <td><strong>{{ measurement.time }}</strong></td>
+                        </tr>
+                        <tr>
+                            <th>Timestamp:</th>
+                            <td><code>{{ measurement.timestamp }}</code></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Area Info Card -->
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="bi bi-bounding-box"></i> Area Details</h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <h6 class="text-muted mb-2">Measured Area</h6>
+                        <h1 class="text-success mb-0">{{ measurement.area|format_coord(3) }}</h1>
+                        <h4 class="text-muted">{{ measurement.unit }}</h4>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h6 class="text-muted mb-2">Points Used</h6>
+                                    <h3 class="text-primary mb-0">{{ measurement.pointsCount }}</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h6 class="text-muted mb-2">Unit</h6>
+                                    <h3 class="text-info mb-0">{{ measurement.unit }}</h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Area Conversions Card -->
+        <div class="col-md-12">
+            <div class="card shadow">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="bi bi-calculator"></i> Area Conversions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h6 class="text-muted mb-2">Acres</h6>
+                                    <h4 class="mb-0">{{ measurement.area|format_coord(3) }}</h4>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h6 class="text-muted mb-2">Hectares</h6>
+                                    <h4 class="mb-0">{{ '%.3f'|format((measurement.area|safe_float) * 0.404686) }}</h4>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h6 class="text-muted mb-2">Square Meters</h6>
+                                    <h4 class="mb-0">{{ '%.2f'|format((measurement.area|safe_float) * 4046.86) }}</h4>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h6 class="text-muted mb-2">Square Feet</h6>
+                                    <h4 class="mb-0">{{ '%.0f'|format((measurement.area|safe_float) * 43560) }}</h4>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Coordinates Card -->
+        <div class="col-md-12">
+            <div class="card shadow">
+                <div class="card-header bg-warning text-white">
+                    <h5 class="mb-0"><i class="bi bi-map"></i> Field Boundary Coordinates</h5>
+                </div>
+                <div class="card-body">
+                    {% if measurement.coordinates %}
+                    <div class="alert alert-info">
+                        <small>
+                            <strong>Total Points:</strong> {{ measurement.coordinates.split(';')|length }}<br>
+                            <strong>Format:</strong> latitude,longitude pairs separated by semicolons<br>
+                            <strong>Polygon:</strong> These points form the boundary of the measured field
+                        </small>
+                    </div>
+                    
+                    <h6 class="text-primary mb-3"><i class="bi bi-geo-alt"></i> Boundary Points</h6>
+                    <div class="row">
+                        {% set coords = measurement.coordinates.split(';') %}
+                        {% for coord in coords %}
+                        {% set lat_lon = coord.split(',') %}
+                        {% if lat_lon|length == 2 %}
+                        <div class="col-md-4 mb-2">
+                            <div class="card bg-light">
+                                <div class="card-body p-2">
+                                    <small>
+                                        <strong>Point {{ loop.index }}:</strong><br>
+                                        Lat: {{ lat_lon[0] }}<br>
+                                        Lon: {{ lat_lon[1] }}
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                    
+                    <hr>
+                    
+                    <details>
+                        <summary class="btn btn-sm btn-outline-primary mb-2">Show Raw Coordinates</summary>
+                        <pre class="bg-light p-3 mt-2" style="max-height: 300px; overflow-y: auto;"><code>{{ measurement.coordinates }}</code></pre>
+                    </details>
+                    
+                    {% if coords|length > 0 %}
+                    {% set first_coord = coords[0].split(',') %}
+                    {% if first_coord|length == 2 %}
+                    <a href="https://www.google.com/maps?q={{ first_coord[0] }},{{ first_coord[1] }}" 
+                       target="_blank" class="btn btn-success mt-2">
+                        <i class="bi bi-map"></i> View First Point on Map
+                    </a>
+                    {% endif %}
+                    {% endif %}
+                    {% else %}
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle"></i> No coordinate data available for this measurement.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

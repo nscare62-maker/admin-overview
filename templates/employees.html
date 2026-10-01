@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block title %}Employees - S2C Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div>
+            <h1 class="h3 mb-1">Employee Directory</h1>
+            <p class="text-muted mb-0" style="font-size: 0.85rem;">Select any employee row to inspect complete profile, attendance, and activity records</p>
+        </div>
+        <div class="d-flex gap-2 align-items-center">
+            <span class="badge badge-subtle-neutral px-3 py-2">Total: {{ employees|length }}</span>
+            <a href="{{ url_for('add_employee') }}" class="btn btn-primary btn-sm">
+                <i class="bi bi-person-plus me-1"></i> Add Employee
+            </a>
+        </div>
+    </div>
+
+    <!-- Table Card -->
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2 py-2">
+            <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-people text-muted"></i>
+                <span class="fw-semibold">All Registered Employees</span>
+            </div>
+            <div style="max-width: 280px; width: 100%;">
+                <input type="text" id="employeeSearchInput" class="form-control form-control-sm" placeholder="Filter employees by name or ID..." aria-label="Search employees">
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0" id="employeeTable">
+                    <thead>
+                        <tr>
+                            <th style="width: 50px;">#</th>
+                            <th>Employee ID</th>
+                            <th>Name</th>
+                            <th>Phone</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for emp in employees %}
+                        <tr class="clickable-row" 
+                            data-href="{{ url_for('employee_detail', employee_id=emp.id) }}"
+                            tabindex="0"
+                            role="link"
+                            aria-label="View details for {{ emp.name }}">
+                            <td class="text-muted">{{ loop.index }}</td>
+                            <td>
+                                <a href="{{ url_for('employee_detail', employee_id=emp.id) }}" class="text-decoration-none font-monospace fw-semibold text-primary">
+                                    {{ emp.employeeId }}
+                                </a>
+                            </td>
+                            <td>
+                                <a href="{{ url_for('employee_detail', employee_id=emp.id) }}" class="text-decoration-none fw-semibold text-dark">
+                                    {{ emp.name }}
+                                </a>
+                            </td>
+                            <td class="text-secondary">{{ emp.phone }}</td>
+                            <td>
+                                {% if emp.role == 'field_staff' %}
+                                <span class="badge badge-subtle-success"><i class="bi bi-geo-alt me-1"></i>Field Staff</span>
+                                {% elif emp.role == 'office_staff' %}
+                                <span class="badge badge-subtle-info"><i class="bi bi-building me-1"></i>Office Staff</span>
+                                {% else %}
+                                <span class="badge badge-subtle-neutral">{{ emp.role }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge {{ 'badge-subtle-success' if emp.status == 'Active' else 'badge-subtle-neutral' }}">
+                                    {{ emp.status }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr class="empty-state-row">
+                            <td colspan="6" class="text-center text-muted py-4">No employees found</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card-footer d-flex justify-content-between align-items-center py-2 text-muted" style="font-size: 0.785rem;">
+            <span>Showing {{ employees|length }} employee records</span>
+            <span><i class="bi bi-info-circle me-1"></i>Press Enter on any row to open details</span>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('employeeSearchInput');
+    const table = document.getElementById('employeeTable');
+    if (searchInput && table) {
+        searchInput.addEventListener('input', function() {
+            const query = this.value.trim().toLowerCase();
+            const rows = table.querySelectorAll('tbody tr:not(.empty-state-row)');
+            let visibleCount = 0;
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                const match = text.includes(query);
+                row.style.display = match ? '' : 'none';
+                if (match) visibleCount++;
+            });
+        });
+    }
+});
+</script>
+{% endblock %}

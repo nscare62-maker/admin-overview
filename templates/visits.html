@@ -1,0 +1,198 @@
+{% extends "base.html" %}
+
+{% block title %}Field Visits - S2C Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div>
+            <h1 class="h3 mb-1">Field Visits</h1>
+            <p class="text-muted mb-0" style="font-size: 0.85rem;">Client visits, field check-ins, location points, and work verification photos</p>
+        </div>
+        <div class="d-flex gap-2 align-items-center">
+            <span class="badge badge-subtle-neutral px-3 py-2">
+                Total: {{ visits|length }}
+            </span>
+        </div>
+    </div>
+
+    <!-- Filter Card -->
+    <div class="card mb-4">
+        <div class="card-body py-3">
+            <form method="get" class="row g-3 align-items-end">
+                <!-- Date Filter -->
+                <div class="col-sm-6 col-md-3">
+                    <label for="visitDate" class="form-label text-muted fw-medium" style="font-size: 0.785rem;">
+                        <i class="bi bi-calendar3 me-1"></i> Date Filter
+                    </label>
+                    <input type="date" 
+                           id="visitDate" 
+                           name="date" 
+                           class="form-control" 
+                           value="{{ date_filter if date_filter != 'all' else '' }}">
+                </div>
+
+                <!-- Employee Filter -->
+                <div class="col-sm-6 col-md-4">
+                    <label for="visitEmployee" class="form-label text-muted fw-medium" style="font-size: 0.785rem;">
+                        <i class="bi bi-person me-1"></i> Employee
+                    </label>
+                    <select id="visitEmployee" name="employee" class="form-select">
+                        <option value="all" {{ 'selected' if employee_filter == 'all' else '' }}>All Employees</option>
+                        {% for emp in employees %}
+                        <option value="{{ emp.id }}" {{ 'selected' if employee_filter == emp.id else '' }}>
+                            {{ emp.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Actions -->
+                <div class="col-md-5 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary flex-fill">
+                        <i class="bi bi-search me-1"></i> Filter Visits
+                    </button>
+                    <a href="{{ url_for('visits') }}" class="btn btn-outline-secondary" title="Reset filters">
+                        <i class="bi bi-arrow-counterclockwise"></i>
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Visits Grid -->
+    <div class="row g-3 mb-4">
+        {% for visit in visits %}
+        <div class="col-md-6 col-xl-4">
+            <div class="card h-100">
+                <div class="card-header py-3">
+                    <div class="d-flex align-items-center justify-content-between gap-2">
+                        <div class="d-flex align-items-center gap-2 overflow-hidden">
+                            <!-- Employee Photo with Initials Fallback (Consistent 40x40px to prevent layout shift) -->
+                            {% if visit.employeePhoto %}
+                            <img src="{{ visit.employeePhoto }}" 
+                                 alt="{{ visit.employeeName }}" 
+                                 class="avatar-img" 
+                                 width="40" 
+                                 height="40" 
+                                 onerror="this.onerror=null; this.classList.add('d-none'); this.nextElementSibling.classList.remove('d-none');">
+                            <div class="avatar-fallback d-none">
+                                {{ visit.employeeInitials }}
+                            </div>
+                            {% else %}
+                            <div class="avatar-fallback">
+                                {{ visit.employeeInitials }}
+                            </div>
+                            {% endif %}
+                            
+                            <div class="overflow-hidden">
+                                <div class="fw-semibold text-truncate" style="font-size: 0.9rem;">
+                                    {{ visit.employeeName }}
+                                </div>
+                                <div class="text-muted font-monospace" style="font-size: 0.75rem;">
+                                    {{ visit.employeeId }}
+                                </div>
+                            </div>
+                        </div>
+
+                        {% if visit.hasPhoto %}
+                        <span class="badge badge-subtle-info flex-shrink-0" title="Work photo attached">
+                            <i class="bi bi-camera me-1"></i>Photo
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    <!-- Date & Time -->
+                    <div class="d-flex align-items-center gap-2 mb-2 text-muted" style="font-size: 0.8rem;">
+                        <i class="bi bi-clock"></i>
+                        <span>{{ visit.date }} &bull; {{ visit.time }}</span>
+                    </div>
+
+                    <!-- Lead Information -->
+                    <div class="mb-3 pt-2 border-top">
+                        <div class="text-muted" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.04em;">Lead / Client:</div>
+                        <div class="fw-medium text-dark" style="font-size: 0.875rem;">{{ visit.leadName }}</div>
+                        {% if visit.leadPhone and visit.leadPhone != 'N/A' %}
+                        <div class="text-muted" style="font-size: 0.785rem;">
+                            <i class="bi bi-telephone me-1"></i>{{ visit.leadPhone }}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Location Coordinates -->
+                    {% if visit.latitude and visit.longitude %}
+                    <div class="mb-3">
+                        <div class="text-muted" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.04em;">Location Coordinates:</div>
+                        <div class="font-monospace text-secondary" style="font-size: 0.785rem;">
+                            {{ visit.latitude|format_coord(4) }}, {{ visit.longitude|format_coord(4) }}
+                        </div>
+                        <a href="https://www.google.com/maps?q={{ visit.latitude }},{{ visit.longitude }}" 
+                           target="_blank" 
+                           rel="noopener noreferrer" 
+                           class="btn btn-outline-secondary btn-sm mt-1 py-0 px-2" 
+                           style="font-size: 0.75rem;">
+                            <i class="bi bi-box-arrow-up-right me-1"></i>View Map
+                        </a>
+                    </div>
+                    {% endif %}
+
+                    <!-- Notes -->
+                    {% if visit.notes %}
+                    <div class="border-top pt-2">
+                        <div class="text-muted" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.04em;">Notes:</div>
+                        <p class="text-secondary mb-0 small" style="max-height: 60px; overflow-y: auto;">
+                            {{ visit.notes }}
+                        </p>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="card-footer py-2">
+                    <a href="{{ url_for('visit_detail', visit_id=visit.id) }}" class="btn btn-outline-primary btn-sm w-100">
+                        <i class="bi bi-eye me-1"></i> View Full Details &amp; Verification Photo
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="col-12">
+            <div class="card p-5 text-center text-muted">
+                <i class="bi bi-geo-alt fs-2 mb-2 text-muted"></i>
+                <div class="h5">No field visits found</div>
+                <p class="small mb-3">No visit records matched your selected employee and date filter.</p>
+                <div>
+                    <a href="{{ url_for('visits') }}" class="btn btn-secondary btn-sm">
+                        Reset Filters
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Summary Stats Strip -->
+    {% if visits %}
+    <div class="card">
+        <div class="card-body py-3">
+            <div class="row text-center g-2">
+                <div class="col-4 border-end">
+                    <div class="metric-label mb-0">Total Visits</div>
+                    <div class="h4 mb-0">{{ visits|length }}</div>
+                </div>
+                <div class="col-4 border-end">
+                    <div class="metric-label mb-0">With Photos</div>
+                    <div class="h4 mb-0 text-primary">{{ visits|selectattr('hasPhoto')|list|length }}</div>
+                </div>
+                <div class="col-4">
+                    <div class="metric-label mb-0">Employees Logged</div>
+                    <div class="h4 mb-0">{{ visits|map(attribute='employeeId')|unique|list|length }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

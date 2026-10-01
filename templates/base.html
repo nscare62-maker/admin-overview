@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}S2C Admin Dashboard{% endblock %}</title>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    {% if session.logged_in %}
+    <div class="app-wrapper">
+        <!-- Mobile Sidebar Backdrop -->
+        <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+        <!-- Vertical Sidebar -->
+        <aside class="app-sidebar" id="appSidebar" aria-label="Main Navigation">
+            <div class="sidebar-header">
+                <a class="sidebar-brand" href="{{ url_for('dashboard') }}">
+                    <span class="sidebar-brand-icon"><i class="bi bi-shield-check"></i></span>
+                    <span>S2C Admin</span>
+                </a>
+                <button type="button" class="btn-close d-lg-none" id="sidebarCloseBtn" aria-label="Close navigation drawer"></button>
+            </div>
+
+            <nav class="sidebar-nav">
+                <a class="sidebar-link {{ 'active' if request.endpoint in ('dashboard', 'index') else '' }}" href="{{ url_for('dashboard') }}">
+                    <i class="bi bi-grid-1x2"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a class="sidebar-link {{ 'active' if request.endpoint in ('employees', 'add_employee', 'employee_detail') else '' }}" href="{{ url_for('employees') }}">
+                    <i class="bi bi-people"></i>
+                    <span>Employees</span>
+                </a>
+                <a class="sidebar-link {{ 'active' if request.endpoint == 'attendance' else '' }}" href="{{ url_for('attendance') }}">
+                    <i class="bi bi-calendar-check"></i>
+                    <span>Attendance</span>
+                </a>
+                <a class="sidebar-link {{ 'active' if request.endpoint == 'permissions' else '' }}" href="{{ url_for('permissions') }}">
+                    <i class="bi bi-file-earmark-text"></i>
+                    <span>Permissions</span>
+                </a>
+                <a class="sidebar-link {{ 'active' if request.endpoint in ('sessions', 'session_detail') else '' }}" href="{{ url_for('sessions') }}">
+                    <i class="bi bi-clock-history"></i>
+                    <span>Sessions</span>
+                </a>
+                <a class="sidebar-link {{ 'active' if request.endpoint in ('visits', 'visit_detail') else '' }}" href="{{ url_for('visits') }}">
+                    <i class="bi bi-geo-alt"></i>
+                    <span>Visits</span>
+                </a>
+                <a class="sidebar-link {{ 'active' if request.endpoint in ('tasks', 'assign_field_task', 'assign_office_task', 'edit_task') else '' }}" href="{{ url_for('tasks') }}">
+                    <i class="bi bi-check2-square"></i>
+                    <span>Tasks</span>
+                </a>
+                <a class="sidebar-link {{ 'active' if request.endpoint in ('travel_expenses', 'travel_expense_detail') else '' }}" href="{{ url_for('travel_expenses') }}">
+                    <i class="bi bi-car-front"></i>
+                    <span>Travel Expenses</span>
+                </a>
+                <a class="sidebar-link {{ 'active' if request.endpoint in ('field_measurements', 'field_measurement_detail') else '' }}" href="{{ url_for('field_measurements') }}">
+                    <i class="bi bi-rulers"></i>
+                    <span>Field Measurements</span>
+                </a>
+                <a class="sidebar-link {{ 'active' if request.endpoint == 'pest_alerts' else '' }}" href="{{ url_for('pest_alerts') }}">
+                    <i class="bi bi-bug"></i>
+                    <span>Pest Alerts</span>
+                </a>
+                <a class="sidebar-link {{ 'active' if request.endpoint == 'reports' else '' }}" href="{{ url_for('reports') }}">
+                    <i class="bi bi-bar-chart"></i>
+                    <span>Reports</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="sidebar-user-pill">
+                    <div class="d-flex align-items-center gap-2 overflow-hidden">
+                        <div class="avatar-fallback" style="width: 32px; height: 32px; font-size: 0.75rem;">
+                            {{ session.username[:2]|upper }}
+                        </div>
+                        <div class="text-truncate">
+                            <div class="fw-semibold text-truncate" style="font-size: 0.8125rem;">{{ session.username }}</div>
+                            <div class="text-muted" style="font-size: 0.72rem;">Administrator</div>
+                        </div>
+                    </div>
+                    <a href="{{ url_for('logout') }}" class="btn btn-sm btn-outline-secondary p-1 px-2" title="Sign out" aria-label="Sign out">
+                        <i class="bi bi-box-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Page Container -->
+        <div class="app-main">
+            <!-- Top App Bar -->
+            <header class="app-header">
+                <div class="d-flex align-items-center gap-2">
+                    <button type="button" class="header-toggle-btn" id="sidebarToggleBtn" aria-label="Toggle navigation drawer">
+                        <i class="bi bi-list"></i>
+                    </button>
+                    <span class="fw-semibold text-secondary d-none d-sm-inline" style="font-size: 0.85rem;">
+                        Workforce Monitoring System
+                    </span>
+                </div>
+                <div class="d-flex align-items-center gap-3">
+                    <span class="text-muted d-none d-md-inline" style="font-size: 0.8rem;">
+                        <i class="bi bi-calendar3 me-1"></i>{{ now().strftime('%b %d, %Y') }}
+                    </span>
+                    <a href="{{ url_for('logout') }}" class="btn btn-sm btn-outline-secondary d-none d-sm-inline-flex align-items-center gap-1">
+                        <i class="bi bi-box-arrow-right"></i> Logout
+                    </a>
+                </div>
+            </header>
+
+            <!-- Flash Notifications -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="px-4 pt-3">
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ 'danger' if category in ('error', 'danger') else ('success' if category == 'success' else 'info') }} alert-dismissible fade show mb-2 py-2" role="alert" style="font-size: 0.85rem;">
+                                {{ message }}
+                                <button type="button" class="btn-close py-2" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            <!-- Page Content -->
+            <main class="app-content">
+                {% block content %}{% endblock %}
+            </main>
+
+            <!-- Compact Footer -->
+            <footer class="app-footer">
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <span>S2C Admin &copy; 2026. All rights reserved.</span>
+                    <span>Status: <span class="badge bg-success" style="font-size: 0.7rem;">Operational</span></span>
+                </div>
+            </footer>
+        </div>
+    </div>
+    {% else %}
+    <!-- Logged out layout (e.g. Login, 404, 500) -->
+    <div class="min-vh-100 d-flex flex-column justify-content-center bg-light py-4">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="container mb-3" style="max-width: 440px;">
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ 'danger' if category in ('error', 'danger') else ('success' if category == 'success' else 'info') }} alert-dismissible fade show mb-2" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+        {{ self.content() }}
+    </div>
+    {% endif %}
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Edit Employee - S2C Admin{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="bi bi-person-gear"></i> Edit Employee</h1>
+        <a href="{{ url_for('employee_detail', employee_id=employee.id) }}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Back
+        </a>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="bi bi-pencil-square"></i> Edit Name & Employee ID</h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i>
+                        Changing name or Employee ID only updates the profile display.
+                        All existing attendance and session records are not affected.
+                    </div>
+
+                    <form method="POST" action="{{ url_for('edit_employee', employee_id=employee.id) }}">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Full Name <span class="text-danger">*</span></label>
+                            <input type="text"
+                                   class="form-control form-control-lg"
+                                   id="name"
+                                   name="name"
+                                   value="{{ employee.name }}"
+                                   required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="employeeId" class="form-label">Employee ID <span class="text-danger">*</span></label>
+                            <input type="text"
+                                   class="form-control form-control-lg"
+                                   id="employeeId"
+                                   name="employeeId"
+                                   value="{{ employee.employeeId or employee.id }}"
+                                   required>
+                            <small class="text-muted">Used for display only. Does not change login phone number.</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label text-muted">Phone (Login, cannot be changed)</label>
+                            <input type="text" class="form-control" value="{{ employee.phone }}" disabled>
+                        </div>
+
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-warning btn-lg">
+                                <i class="bi bi-check-circle"></i> Save Changes
+                            </button>
+                            <a href="{{ url_for('employee_detail', employee_id=employee.id) }}" class="btn btn-secondary">
+                                <i class="bi bi-x-circle"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

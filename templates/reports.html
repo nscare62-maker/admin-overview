@@ -1,0 +1,273 @@
+{% extends "base.html" %}
+{% block title %}Reports - S2C Admin{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <h1 class="mb-4"><i class="bi bi-graph-up"></i> Reports & Analytics</h1>
+    
+    <!-- Report Filters -->
+    <div class="card shadow mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="bi bi-funnel"></i> Report Configuration</h5>
+        </div>
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <!-- Report Type -->
+                <div class="col-md-3">
+                    <label class="form-label"><i class="bi bi-file-earmark-bar-graph"></i> Report Type</label>
+                    <select name="type" class="form-select" onchange="this.form.submit()">
+                        <option value="attendance" {{ 'selected' if report_type == 'attendance' else '' }}>Attendance Summary</option>
+                        <option value="sessions" {{ 'selected' if report_type == 'sessions' else '' }}>Work Sessions</option>
+                        <option value="permissions" {{ 'selected' if report_type == 'permissions' else '' }}>Permissions & Leaves</option>
+                    </select>
+                </div>
+                
+                <!-- Month Filter -->
+                <div class="col-md-3">
+                    <label class="form-label"><i class="bi bi-calendar-month"></i> Month</label>
+                    <input type="month" name="month" class="form-control" value="{{ month }}">
+                </div>
+                
+                <!-- Employee Filter -->
+                <div class="col-md-3">
+                    <label class="form-label"><i class="bi bi-person"></i> Employee</label>
+                    <select name="employee" class="form-select">
+                        <option value="all" {{ 'selected' if employee_id == 'all' else '' }}>All Employees</option>
+                        {% for emp in employees %}
+                        <option value="{{ emp.id }}" {{ 'selected' if employee_id == emp.id else '' }}>
+                            {{ emp.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <!-- Generate Button -->
+                <div class="col-md-3">
+                    <label class="form-label">&nbsp;</label>
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-arrow-clockwise"></i> Generate Report
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Attendance Report -->
+    {% if report_type == 'attendance' %}
+    <div class="card shadow">
+        <div class="card-header bg-info text-white">
+            <h5 class="mb-0"><i class="bi bi-calendar-check"></i> Attendance Summary Report - {{ month }}</h5>
+        </div>
+        <div class="card-body">
+            {% if report_data %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>#</th>
+                            <th>Employee</th>
+                            <th>Role</th>
+                            <th>Total Days</th>
+                            <th>On Time</th>
+                            <th>Late Start</th>
+                            <th>Half Days</th>
+                            <th>Avg Late (min)</th>
+                            <th>Performance</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for data in report_data %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td>
+                                <strong>{{ data.employeeName }}</strong><br>
+                                <small class="text-muted">{{ data.employeeId }}</small>
+                            </td>
+                            <td>
+                                {% if data.employeeRole == 'field_staff' %}
+                                <span class="badge bg-success">Field Staff</span>
+                                {% elif data.employeeRole == 'office_staff' %}
+                                <span class="badge bg-info">Office Staff</span>
+                                {% else %}
+                                <span class="badge bg-secondary">{{ data.employeeRole }}</span>
+                                {% endif %}
+                            </td>
+                            <td><strong>{{ data.totalWorkDays }}</strong></td>
+                            <td><span class="badge bg-success">{{ data.onTimeDays }}</span></td>
+                            <td><span class="badge bg-warning">{{ data.lateStartDays }}</span></td>
+                            <td><span class="badge bg-danger">{{ data.halfDays }}</span></td>
+                            <td>{{ data.averageLateMinutes|round|int }}</td>
+                            <td>
+                                {% set performance = (data.onTimeDays / data.totalWorkDays * 100) if data.totalWorkDays > 0 else 0 %}
+                                <div class="progress" style="height: 25px;">
+                                    <div class="progress-bar {{ 'bg-success' if performance >= 80 else 'bg-warning' if performance >= 60 else 'bg-danger' }}" 
+                                         style="width: {{ performance }}%">
+                                        {{ "%.1f"|format(performance) }}%
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="alert alert-info text-center">
+                <i class="bi bi-info-circle"></i> No attendance data found for the selected month
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Sessions Report -->
+    {% if report_type == 'sessions' %}
+    <div class="card shadow">
+        <div class="card-header bg-success text-white">
+            <h5 class="mb-0"><i class="bi bi-clock-history"></i> Work Sessions Report - {{ month }}</h5>
+        </div>
+        <div class="card-body">
+            {% if report_data %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>#</th>
+                            <th>Employee</th>
+                            <th>Role</th>
+                            <th>Total Sessions</th>
+                            <th>Office</th>
+                            <th>Field</th>
+                            <th>Farm</th>
+                            <th>Completed</th>
+                            <th>Total Work Hours</th>
+                            <th>Total Break Hours</th>
+                            <th>Avg Hours/Session</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for data in report_data %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td>
+                                <strong>{{ data.employeeName }}</strong><br>
+                                <small class="text-muted">{{ data.employeeId }}</small>
+                            </td>
+                            <td>
+                                {% if data.employeeRole == 'field_staff' %}
+                                <span class="badge bg-success">Field Staff</span>
+                                {% elif data.employeeRole == 'office_staff' %}
+                                <span class="badge bg-info">Office Staff</span>
+                                {% else %}
+                                <span class="badge bg-secondary">{{ data.employeeRole }}</span>
+                                {% endif %}
+                            </td>
+                            <td><strong>{{ data.totalSessions }}</strong></td>
+                            <td><span class="badge bg-info">{{ data.officeSessions }}</span></td>
+                            <td><span class="badge bg-success">{{ data.fieldSessions }}</span></td>
+                            <td><span class="badge bg-warning">{{ data.farmSessions }}</span></td>
+                            <td><span class="badge bg-secondary">{{ data.completedSessions }}</span></td>
+                            <td><strong>{{ data.totalWorkHours }}h</strong></td>
+                            <td>{{ data.totalBreakHours }}h</td>
+                            <td>{{ data.avgWorkHoursPerSession }}h</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="alert alert-info text-center">
+                <i class="bi bi-info-circle"></i> No session data found for the selected month
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Permissions Report -->
+    {% if report_type == 'permissions' %}
+    <div class="card shadow">
+        <div class="card-header bg-warning text-dark">
+            <h5 class="mb-0"><i class="bi bi-file-earmark-text"></i> Permissions & Leaves Report - {{ month }}</h5>
+        </div>
+        <div class="card-body">
+            {% if report_data %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>#</th>
+                            <th>Employee</th>
+                            <th>Role</th>
+                            <th>Total Requests</th>
+                            <th>Approved</th>
+                            <th>Rejected</th>
+                            <th>Pending</th>
+                            <th>Late Start</th>
+                            <th>CL</th>
+                            <th>ML</th>
+                            <th>Emergency</th>
+                            <th>Planned</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for data in report_data %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td>
+                                <strong>{{ data.employeeName }}</strong><br>
+                                <small class="text-muted">{{ data.employeeId }}</small>
+                            </td>
+                            <td>
+                                {% if data.employeeRole == 'field_staff' %}
+                                <span class="badge bg-success">Field Staff</span>
+                                {% elif data.employeeRole == 'office_staff' %}
+                                <span class="badge bg-info">Office Staff</span>
+                                {% else %}
+                                <span class="badge bg-secondary">{{ data.employeeRole }}</span>
+                                {% endif %}
+                            </td>
+                            <td><strong>{{ data.totalRequests }}</strong></td>
+                            <td><span class="badge bg-success">{{ data.approved }}</span></td>
+                            <td><span class="badge bg-danger">{{ data.rejected }}</span></td>
+                            <td><span class="badge bg-warning">{{ data.pending }}</span></td>
+                            <td>{{ data.lateStart }}</td>
+                            <td>{{ data.casualLeave }}</td>
+                            <td>{{ data.medicalLeave }}</td>
+                            <td>{{ data.emergency }}</td>
+                            <td>{{ data.plannedLeave }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="alert alert-info text-center">
+                <i class="bi bi-info-circle"></i> No permission data found for the selected month
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Export Options -->
+    {% if report_data %}
+    <div class="card shadow mt-4">
+        <div class="card-body text-center">
+            <h5 class="mb-3">Export Report</h5>
+            <button class="btn btn-success me-2" onclick="window.print()">
+                <i class="bi bi-printer"></i> Print Report
+            </button>
+            <button class="btn btn-primary" onclick="exportToCSV()">
+                <i class="bi bi-file-earmark-spreadsheet"></i> Export to CSV
+            </button>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function exportToCSV() {
+    alert('CSV export feature coming soon!');
+}
+</script>
+{% endblock %}

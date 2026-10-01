@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+
+{% block title %}Travel Expenses - S2C Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="bi bi-car-front"></i> Travel Expense History</h1>
+        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Back to Dashboard
+        </a>
+    </div>
+
+    <!-- Employee Filter -->
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <form method="GET" action="{{ url_for('travel_expenses') }}" class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label for="employee" class="form-label"><i class="bi bi-funnel"></i> Filter by Employee</label>
+                    <select name="employee" id="employee" class="form-select">
+                        <option value="">All Employees</option>
+                        {% for emp in employees %}
+                        <option value="{{ emp.id }}" {% if emp.id == selected_employee %}selected{% endif %}>
+                            {{ emp.name }} ({{ emp.id }})
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-search"></i> Apply Filter
+                    </button>
+                </div>
+                {% if selected_employee %}
+                <div class="col-md-2">
+                    <a href="{{ url_for('travel_expenses') }}" class="btn btn-secondary w-100">
+                        <i class="bi bi-x-circle"></i> Clear Filter
+                    </a>
+                </div>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+
+    {% if expenses %}
+    <!-- Summary Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2">Total Trips</h6>
+                    <h2 class="mb-0">{{ expenses|length }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2">Total Distance</h6>
+                    <h2 class="mb-0">{{ "%.2f"|format(expenses|sum(attribute='distance')) }} km</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2">Total Amount</h6>
+                    <h2 class="mb-0">₹{{ "%.2f"|format(expenses|sum(attribute='amount')) }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2">Avg Rate</h6>
+                    <h2 class="mb-0">₹{{ "%.2f"|format(expenses|sum(attribute='rate') / expenses|length) }}/km</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Expenses Table -->
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="bi bi-list"></i> All Travel Expenses</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Date & Time</th>
+                            <th>Employee</th>
+                            <th>Distance</th>
+                            <th>Rate</th>
+                            <th>Amount</th>
+                            <th>Points</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for expense in expenses %}
+                        <tr>
+                            <td>
+                                <strong>{{ expense.date }}</strong><br>
+                                <small class="text-muted">{{ expense.time }}</small>
+                            </td>
+                            <td>
+                                <strong>{{ expense.employeeName }}</strong><br>
+                                <small class="text-muted">{{ expense.employeeId }}</small>
+                            </td>
+                            <td>
+                                <span class="badge bg-success">{{ "%.3f"|format(expense.distance) }} km</span>
+                            </td>
+                            <td>₹{{ "%.2f"|format(expense.rate) }}/km</td>
+                            <td>
+                                <strong class="text-success">₹{{ "%.2f"|format(expense.amount) }}</strong>
+                            </td>
+                            <td>
+                                <span class="badge bg-info">{{ expense.routePoints }} points</span>
+                            </td>
+                            <td>
+                                <a href="{{ url_for('travel_expense_detail', expense_id=expense.expenseId) }}" 
+                                   class="btn btn-sm btn-primary">
+                                    <i class="bi bi-eye"></i> View
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle"></i> No travel expenses recorded yet.
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

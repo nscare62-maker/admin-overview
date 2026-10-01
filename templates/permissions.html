@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+
+{% block title %}Permissions - S2C Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div>
+            <h1 class="h3 mb-1">Permission Requests</h1>
+            <p class="text-muted mb-0" style="font-size: 0.85rem;">Click on any request reason to inspect the complete formal permission request letter</p>
+        </div>
+        <div class="d-flex gap-2">
+            <span class="badge badge-subtle-neutral px-3 py-2">
+                {{ permissions|length }} Request{% if permissions|length != 1 %}s{% endif %}
+            </span>
+        </div>
+    </div>
+
+    <!-- Status Tabs Card -->
+    <div class="card mb-4">
+        <div class="card-body py-2 d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div class="btn-group" role="group" aria-label="Filter permission requests by status">
+                <a href="{{ url_for('permissions', status='PENDING') }}" class="btn btn-sm {{ 'btn-warning text-dark fw-semibold' if status_filter == 'PENDING' else 'btn-outline-secondary' }}">
+                    Pending
+                </a>
+                <a href="{{ url_for('permissions', status='APPROVED') }}" class="btn btn-sm {{ 'btn-success fw-semibold' if status_filter == 'APPROVED' else 'btn-outline-secondary' }}">
+                    Approved
+                </a>
+                <a href="{{ url_for('permissions', status='REJECTED') }}" class="btn btn-sm {{ 'btn-danger fw-semibold' if status_filter == 'REJECTED' else 'btn-outline-secondary' }}">
+                    Rejected
+                </a>
+                <a href="{{ url_for('permissions', status='all') }}" class="btn btn-sm {{ 'btn-primary fw-semibold' if status_filter == 'all' else 'btn-outline-secondary' }}">
+                    All Requests
+                </a>
+            </div>
+            <div style="max-width: 280px; width: 100%;">
+                <input type="text" id="permissionSearchInput" class="form-control form-control-sm" placeholder="Search by employee or reason..." aria-label="Search permissions">
+            </div>
+        </div>
+    </div>
+
+    <!-- Requests Table Card -->
+    <div class="card">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0" id="permissionsTable">
+                    <thead>
+                        <tr>
+                            <th>Employee</th>
+                            <th>Request Type</th>
+                            <th>Start Date</th>
+                            <th>Duration</th>
+                            <th>Reason (Click to view full letter)</th>
+                            <th>Status</th>
+                            <th style="width: 130px;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for perm in permissions %}
+                        <tr>
+                            <td>
+                                <div class="fw-semibold text-dark">{{ perm.employeeName }}</div>
+                                <small class="text-muted font-monospace">{{ perm.employeeId or '' }}</small>
+                            </td>
+                            <td>
+                                <span class="badge badge-subtle-info">{{ perm.type }}</span>
+                            </td>
+                            <td class="text-secondary">{{ perm.startDate|permission_date }}</td>
+                            <td>{{ perm.durationDisplay }}</td>
+                            <td>
+                                <button type="button" 
+                                        class="btn btn-link p-0 text-start text-decoration-none text-primary fw-medium permission-reason-trigger" 
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#permissionPreviewModal" 
+                                        data-employee="{{ perm.employeeName }}" 
+                                        data-type="{{ perm.type }}" 
+                                        data-date="{{ perm.startDate|permission_date }}" 
+                                        data-duration="{{ perm.durationDisplay }}" 
+                                        data-status="{{ perm.status }}" 
+                                        data-reason="{{ perm.reason or 'No formal reason provided in request submission.' }}"
+                                        title="Click to view full permission letter"
+                                        aria-label="View permission letter for {{ perm.employeeName }}">
+                                    <span class="d-inline-flex align-items-center gap-1">
+                                        <i class="bi bi-file-text"></i>
+                                        <span>{{ (perm.reason or 'No reason provided')|truncate(45, True, '...') }}</span>
+                                    </span>
+                                </button>
+                            </td>
+                            <td>
+                                <span class="badge {{ 'badge-subtle-success' if perm.status == 'APPROVED' else ('badge-subtle-warning' if perm.status == 'PENDING' else 'badge-subtle-danger') }}">
+                                    {{ perm.status }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if perm.status == 'PENDING' %}
+                                <div class="d-flex gap-1">
+                                    <form method="POST" action="{{ url_for('approve_permission', request_id=perm.id) }}" class="d-inline">
+                                        <button type="submit" class="btn btn-sm btn-outline-success py-1 px-2" title="Approve permission">
+                                            <i class="bi bi-check-lg me-1"></i>Approve
+                                        </button>
+                                    </form>
+                                    <form method="POST" action="{{ url_for('reject_permission', request_id=perm.id) }}" class="d-inline">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger py-1 px-2" title="Reject permission">
+                                            <i class="bi bi-x-lg me-1"></i>Reject
+                                        </button>
+                                    </form>
+                                </div>
+                                {% else %}
+                                <span class="text-muted small">Processed</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr class="empty-state-row">
+                            <td colspan="7" class="text-center text-muted py-5">
+                                <i class="bi bi-inbox fs-3 d-block mb-2 text-muted"></i>
+                                No permission requests found for this status.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card-footer py-2 text-muted d-flex justify-content-between align-items-center" style="font-size: 0.785rem;">
+            <span>Showing {{ permissions|length }} permission records</span>
+            <span><i class="bi bi-cursor-fill me-1"></i>Select any reason to preview formatted letter</span>
+        </div>
+    </div>
+</div>
+
+<!-- Accessible Permission Letter Modal -->
+<div class="modal fade" id="permissionPreviewModal" tabindex="-1" aria-labelledby="previewModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header border-bottom">
+                <div>
+                    <h5 class="modal-title mb-1" id="previewModalTitle">Permission Request Letter</h5>
+                    <div class="d-flex flex-wrap gap-2 align-items-center" style="font-size: 0.8rem;">
+                        <span class="text-muted">Applicant: <strong id="previewModalEmployee" class="text-dark"></strong></span>
+                        <span class="text-muted">&bull;</span>
+                        <span class="text-muted">Type: <span id="previewModalType" class="badge badge-subtle-info"></span></span>
+                        <span class="text-muted">&bull;</span>
+                        <span class="text-muted">Date: <span id="previewModalDate" class="fw-medium text-dark"></span></span>
+                        <span class="text-muted">&bull;</span>
+                        <span class="text-muted">Duration: <span id="previewModalDuration" class="fw-medium text-dark"></span></span>
+                        <span class="text-muted">&bull;</span>
+                        <span id="previewModalStatus" class="badge"></span>
+                    </div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body py-3">
+                <div class="mb-2 text-muted fw-semibold" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;">
+                    Submitted Request Statement:
+                </div>
+                <!-- Preserves exact formatting and paragraph breaks -->
+                <div class="permission-letter-box" id="previewModalReason"></div>
+            </div>
+            <div class="modal-footer border-top py-2">
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">
+                    <i class="bi bi-x me-1"></i> Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('permissionSearchInput');
+    const table = document.getElementById('permissionsTable');
+    if (searchInput && table) {
+        searchInput.addEventListener('input', function() {
+            const query = this.value.trim().toLowerCase();
+            const rows = table.querySelectorAll('tbody tr:not(.empty-state-row)');
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(query) ? '' : 'none';
+            });
+        });
+    }
+});
+</script>
+{% endblock %}

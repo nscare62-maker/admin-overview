@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block title %}Field Measurements - S2C Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="bi bi-rulers"></i> Field Measurement History</h1>
+        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Back to Dashboard
+        </a>
+    </div>
+
+    <!-- Employee Filter -->
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <form method="GET" action="{{ url_for('field_measurements') }}" class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label for="employee" class="form-label"><i class="bi bi-funnel"></i> Filter by Employee</label>
+                    <select name="employee" id="employee" class="form-select">
+                        <option value="">All Employees</option>
+                        {% for emp in employees %}
+                        <option value="{{ emp.id }}" {% if emp.id == selected_employee %}selected{% endif %}>
+                            {{ emp.name }} ({{ emp.id }})
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-search"></i> Apply Filter
+                    </button>
+                </div>
+                {% if selected_employee %}
+                <div class="col-md-2">
+                    <a href="{{ url_for('field_measurements') }}" class="btn btn-secondary w-100">
+                        <i class="bi bi-x-circle"></i> Clear Filter
+                    </a>
+                </div>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+
+    {% if measurements %}
+    <!-- Summary Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2">Total Measurements</h6>
+                    <h2 class="mb-0">{{ measurements|length }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2">Total Area</h6>
+                    <h2 class="mb-0">{{ "%.2f"|format(measurements|sum(attribute='area')) }} acres</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2">Avg Area</h6>
+                    <h2 class="mb-0">{{ '%.2f'|format(measurements|sum(attribute='area') / measurements|length) if measurements|length > 0 else '0.00' }} acres</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Measurements Table -->
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="bi bi-list"></i> All Field Measurements</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Date & Time</th>
+                            <th>Employee</th>
+                            <th>Area</th>
+                            <th>Unit</th>
+                            <th>Points</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for measurement in measurements %}
+                        <tr>
+                            <td>
+                                <strong>{{ measurement.date }}</strong><br>
+                                <small class="text-muted">{{ measurement.time }}</small>
+                            </td>
+                            <td>
+                                <strong>{{ measurement.employeeName }}</strong><br>
+                                <small class="text-muted">{{ measurement.employeeId }}</small>
+                            </td>
+                            <td>
+                                <span class="badge bg-success" style="font-size: 1rem;">
+                                    {{ measurement.area|format_coord(3) }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge bg-info">{{ measurement.unit }}</span>
+                            </td>
+                            <td>
+                                <span class="badge bg-primary">{{ measurement.pointsCount }} points</span>
+                            </td>
+                            <td>
+                                <a href="{{ url_for('field_measurement_detail', measurement_id=measurement.measurementId) }}" 
+                                   class="btn btn-sm btn-primary">
+                                    <i class="bi bi-eye"></i> View
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle"></i> No field measurements recorded yet.
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

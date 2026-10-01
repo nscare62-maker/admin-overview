@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit Task' if task else 'New Task' }} - S2C Admin{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="bi bi-{{ 'pencil' if task else 'plus-circle' }}"></i> {{ 'Edit Task' if task else 'Assign New Task' }}</h1>
+        <a href="{{ url_for('tasks') }}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Back to Tasks
+        </a>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-card-text"></i> Task Information</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        <!-- Title -->
+                        <div class="mb-3">
+                            <label for="title" class="form-label">
+                                <i class="bi bi-card-heading"></i> Task Title <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control" id="title" name="title" 
+                                   value="{{ task.title if task else '' }}" required
+                                   placeholder="Enter task title">
+                        </div>
+                        
+                        <!-- Description -->
+                        <div class="mb-3">
+                            <label for="description" class="form-label">
+                                <i class="bi bi-text-paragraph"></i> Description
+                            </label>
+                            <textarea class="form-control" id="description" name="description" 
+                                      rows="4" placeholder="Enter task description">{{ task.description if task else '' }}</textarea>
+                        </div>
+                        
+                        <hr>
+                        
+                        <!-- Assigned To -->
+                        <div class="mb-3">
+                            <label for="assignedTo" class="form-label">
+                                <i class="bi bi-person"></i> Assign To <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select" id="assignedTo" name="assignedTo" required>
+                                <option value="">Select Employee...</option>
+                                <optgroup label="Field Staff">
+                                    {% for emp in employees if emp.role == 'field_staff' %}
+                                    <option value="{{ emp.employeeId }}" 
+                                            {{ 'selected' if task and task.assignedTo == emp.employeeId else '' }}>
+                                        {{ emp.name }} ({{ emp.employeeId }})
+                                    </option>
+                                    {% endfor %}
+                                </optgroup>
+                                <optgroup label="Office Staff">
+                                    {% for emp in employees if emp.role == 'office_staff' %}
+                                    <option value="{{ emp.employeeId }}" 
+                                            {{ 'selected' if task and task.assignedTo == emp.employeeId else '' }}>
+                                        {{ emp.name }} ({{ emp.employeeId }})
+                                    </option>
+                                    {% endfor %}
+                                </optgroup>
+                            </select>
+                            <small class="text-muted">Select the employee to assign this task to</small>
+                        </div>
+                        
+                        <div class="row">
+                            <!-- Priority -->
+                            <div class="col-md-6 mb-3">
+                                <label for="priority" class="form-label">
+                                    <i class="bi bi-flag"></i> Priority
+                                </label>
+                                <select class="form-select" id="priority" name="priority">
+                                    <option value="Low" {{ 'selected' if task and task.priority == 'Low' else '' }}>Low</option>
+                                    <option value="Medium" {{ 'selected' if task and task.priority == 'Medium' else 'selected' }}>Medium</option>
+                                    <option value="High" {{ 'selected' if task and task.priority == 'High' else '' }}>High</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Status (only for edit) -->
+                            {% if task %}
+                            <div class="col-md-6 mb-3">
+                                <label for="status" class="form-label">
+                                    <i class="bi bi-check-circle"></i> Status
+                                </label>
+                                <select class="form-select" id="status" name="status">
+                                    <option value="Pending" {{ 'selected' if task.status == 'Pending' else '' }}>Pending</option>
+                                    <option value="In Progress" {{ 'selected' if task.status == 'In Progress' else '' }}>In Progress</option>
+                                    <option value="Completed" {{ 'selected' if task.status == 'Completed' else '' }}>Completed</option>
+                                </select>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Due Date -->
+                        <div class="mb-3">
+                            <label for="dueDate" class="form-label">
+                                <i class="bi bi-calendar-check"></i> Due Date
+                            </label>
+                            <input type="date" class="form-control" id="dueDate" name="dueDate"
+                                   value="{% if task and task.dueDate %}{{ task.dueDate|timestamp_to_date }}{% endif %}">
+                            <small class="text-muted">Optional - Set a deadline for this task</small>
+                        </div>
+                        
+                        <hr>
+                        <h6 class="mb-3"><i class="bi bi-info-circle"></i> Additional Information (Optional)</h6>
+                        
+                        <div class="row">
+                            <!-- Contact Name -->
+                            <div class="col-md-6 mb-3">
+                                <label for="contactName" class="form-label">
+                                    <i class="bi bi-person-badge"></i> Contact Name
+                                </label>
+                                <input type="text" class="form-control" id="contactName" name="contactName"
+                                       value="{{ task.contactName if task else '' }}"
+                                       placeholder="Customer/Contact name">
+                            </div>
+                            
+                            <!-- Contact Number -->
+                            <div class="col-md-6 mb-3">
+                                <label for="contactNumber" class="form-label">
+                                    <i class="bi bi-telephone"></i> Contact Number
+                                </label>
+                                <input type="tel" class="form-control" id="contactNumber" name="contactNumber"
+                                       value="{{ task.contactNumber if task else '' }}"
+                                       placeholder="Phone number">
+                            </div>
+                        </div>
+                        
+                        <!-- Location -->
+                        <div class="mb-3">
+                            <label for="location" class="form-label">
+                                <i class="bi bi-geo-alt"></i> Location
+                            </label>
+                            <input type="text" class="form-control" id="location" name="location"
+                                   value="{{ task.location if task else '' }}"
+                                   placeholder="Task location or address">
+                        </div>
+                        
+                        <!-- Service -->
+                        <div class="mb-3">
+                            <label for="service" class="form-label">
+                                <i class="bi bi-tools"></i> Service/Type
+                            </label>
+                            <input type="text" class="form-control" id="service" name="service"
+                                   value="{{ task.service if task else '' }}"
+                                   placeholder="Service type or category">
+                        </div>
+                        
+                        <hr>
+                        
+                        <!-- Submit Buttons -->
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-{{ 'check-circle' if task else 'plus-circle' }}"></i> 
+                                {{ 'Update Task' if task else 'Create Task' }}
+                            </button>
+                            <a href="{{ url_for('tasks') }}" class="btn btn-secondary">
+                                <i class="bi bi-x-circle"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Help Card -->
+            <div class="card shadow mt-3">
+                <div class="card-header bg-info text-white">
+                    <h6 class="mb-0"><i class="bi bi-question-circle"></i> Help</h6>
+                </div>
+                <div class="card-body">
+                    <ul class="mb-0">
+                        <li><strong>Title & Assign To</strong> are required fields</li>
+                        <li><strong>Field Staff</strong> tasks appear in their mobile app task list</li>
+                        <li><strong>Office Staff</strong> tasks appear in their office task tracker</li>
+                        <li><strong>Priority</strong> helps employees prioritize their work</li>
+                        <li><strong>Contact info</strong> is useful for customer-facing tasks</li>
+                        <li><strong>Location & Service</strong> help with field task planning</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

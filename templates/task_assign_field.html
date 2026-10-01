@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+{% block title %}Assign Field Staff Task - S2C Admin{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="bi bi-geo-alt"></i> Assign Field Staff Task</h1>
+        <a href="{{ url_for('tasks') }}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Back to Tasks
+        </a>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="bi bi-geo-alt"></i> Field Staff Task Information</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        <!-- Title -->
+                        <div class="mb-3">
+                            <label for="title" class="form-label">
+                                <i class="bi bi-card-heading"></i> Task Title <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control" id="title" name="title" required
+                                   placeholder="e.g., Customer Visit - ABC Company">
+                            <small class="text-muted">Clear, specific title for the field task</small>
+                        </div>
+                        
+                        <!-- Description -->
+                        <div class="mb-3">
+                            <label for="description" class="form-label">
+                                <i class="bi bi-text-paragraph"></i> Description
+                            </label>
+                            <textarea class="form-control" id="description" name="description" 
+                                      rows="4" placeholder="Task details, instructions, requirements..."></textarea>
+                        </div>
+                        
+                        <hr>
+                        
+                        <!-- Assigned To -->
+                        <div class="mb-3">
+                            <label for="assignedTo" class="form-label">
+                                <i class="bi bi-person"></i> Assign To Field Staff <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select" id="assignedTo" name="assignedTo" required>
+                                <option value="">Select Field Staff Employee...</option>
+                                {% for emp in employees if emp.role == 'field_staff' %}
+                                <option value="{{ emp.employeeId }}">
+                                    {{ emp.name }} ({{ emp.employeeId }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <small class="text-muted">Select the field staff member to assign this task to</small>
+                        </div>
+                        
+                        <div class="row">
+                            <!-- Priority -->
+                            <div class="col-md-6 mb-3">
+                                <label for="priority" class="form-label">
+                                    <i class="bi bi-flag"></i> Priority
+                                </label>
+                                <select class="form-select" id="priority" name="priority">
+                                    <option value="Low">Low</option>
+                                    <option value="Medium" selected>Medium</option>
+                                    <option value="High">High</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Due Date -->
+                            <div class="col-md-6 mb-3">
+                                <label for="dueDate" class="form-label">
+                                    <i class="bi bi-calendar-check"></i> Due Date
+                                </label>
+                                <input type="date" class="form-control" id="dueDate" name="dueDate">
+                            </div>
+                        </div>
+                        
+                        <hr>
+                        <h6 class="mb-3"><i class="bi bi-person-badge"></i> Customer/Contact Information</h6>
+                        
+                        <div class="row">
+                            <!-- Contact Name -->
+                            <div class="col-md-6 mb-3">
+                                <label for="contactName" class="form-label">
+                                    <i class="bi bi-person-badge"></i> Contact Name
+                                </label>
+                                <input type="text" class="form-control" id="contactName" name="contactName"
+                                       placeholder="Customer/Contact name">
+                            </div>
+                            
+                            <!-- Contact Number -->
+                            <div class="col-md-6 mb-3">
+                                <label for="contactNumber" class="form-label">
+                                    <i class="bi bi-telephone"></i> Contact Number
+                                </label>
+                                <input type="tel" class="form-control" id="contactNumber" name="contactNumber"
+                                       placeholder="Phone number">
+                            </div>
+                        </div>
+                        
+                        <!-- Location -->
+                        <div class="mb-3">
+                            <label for="location" class="form-label">
+                                <i class="bi bi-geo-alt"></i> Location <span class="text-muted">(Important for field tasks)</span>
+                            </label>
+                            <input type="text" class="form-control" id="location" name="location"
+                                   placeholder="Task location or address">
+                            <small class="text-muted">Provide specific address or location details</small>
+                        </div>
+                        
+                        <!-- Service -->
+                        <div class="mb-3">
+                            <label for="service" class="form-label">
+                                <i class="bi bi-tools"></i> Service/Type
+                            </label>
+                            <input type="text" class="form-control" id="service" name="service"
+                                   placeholder="e.g., Installation, Maintenance, Survey">
+                        </div>
+                        
+                        <hr>
+                        
+                        <!-- Submit Buttons -->
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-check-circle"></i> Assign Field Task
+                            </button>
+                            <a href="{{ url_for('tasks') }}" class="btn btn-secondary">
+                                <i class="bi bi-x-circle"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Help Card -->
+            <div class="card shadow mt-3">
+                <div class="card-header bg-info text-white">
+                    <h6 class="mb-0"><i class="bi bi-question-circle"></i> Field Staff Task Guidelines</h6>
+                </div>
+                <div class="card-body">
+                    <ul class="mb-0">
+                        <li><strong>Location</strong> is crucial for field tasks - provide specific address</li>
+                        <li><strong>Contact info</strong> helps field staff reach customers</li>
+                        <li><strong>Service type</strong> helps staff prepare necessary tools/materials</li>
+                        <li>Task appears in employee's mobile app "My Tasks" section</li>
+                        <li>Employee can update status and track call duration</li>
+                        <li>GPS location is captured when task is completed</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

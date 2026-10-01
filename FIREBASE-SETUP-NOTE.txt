@@ -1,0 +1,23 @@
+FIREBASE CREDENTIALS SETUP
+==========================
+
+The admin dashboard needs Firebase credentials to connect to your database.
+
+HOW TO GET FIREBASE CREDENTIALS:
+1. Go to https://console.firebase.google.com/
+2. Select your project: "login-otp-29372"
+3. Click the gear icon (⚙️) → Project Settings
+4. Go to "Service Accounts" tab
+5. Click "Generate New Private Key"
+6. Click "Generate Key" button
+7. A JSON file will download
+
+SAVE THE FILE:
+- Rename it to: firebase-credentials.json
+- Place it in the admin-dashboard folder
+- Make sure it's in the same folder as app.py
+
+The app will run without it but won't be able to fetch data from Firebase.
+You'll see a warning message when starting the server.
+
+Once you add the file, restart the server and it will connect to Firebase automatically.
