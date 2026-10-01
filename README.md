@@ -1,406 +1,288 @@
 # S2C Admin Dashboard - Employee Monitoring System
 
-A comprehensive Flask-based web dashboard for monitoring and managing employees in the S2C (Start-to-Close) attendance tracking system.
-
-## 🎯 Features
-
-### 📊 Dashboard
-- Real-time statistics overview
-- Total employees count
-- Active sessions monitoring
-- Today's attendance summary
-- Pending permissions count
-- Quick action buttons
-- System status information
-
-### 👥 Employee Management
-- View all employees
-- Employee details page
-- Recent sessions history
-- Attendance records
-- Monthly summary statistics
-- Employee status tracking
-
-### 📅 Attendance Management
-- View all attendance records
-- Filter by date and status
-- Approve/reject late starts
-- Approve/reject half days
-- Track on-time, late start, and half-day attendance
-- Automatic status detection
-
-### 📝 Permission Management
-- View all permission requests
-- Filter by status (Pending/Approved/Rejected)
-- Approve late start permissions
-- Approve leave requests (CL/ML/Emergency/Planned)
-- Add approval remarks
-- Track permission history
-
-### ⏰ Session Monitoring
-- View all work sessions
-- Filter by status (Active/Completed)
-- Monitor active sessions in real-time
-- Track work duration
-- Track break duration
-- View session details
-
-### 📈 Reports
-- Monthly attendance reports
-- Employee punctuality reports
-- Late start statistics
-- Half-day deduction reports
-- Exportable data
+A comprehensive Flask-based web dashboard for monitoring, managing, and tracking employees, field visits, tasks, and field operations in the S2C (Start-to-Close) management system.
 
 ---
 
-## 🚀 Installation
+## 🎯 Features & Modules
 
-### Prerequisites
-- Python 3.8 or higher
-- pip (Python package manager)
-- Firebase project with Realtime Database
-- Firebase service account credentials
+### 📊 1. Dashboard Overview
+- **Real-Time KPI Cards:** Active sessions, total employees, today's attendance count, and pending permission requests.
+- **Quick Action Links:** Fast navigation to assign tasks, check attendance, or inspect field activities.
+- **System Diagnostics:** Live Firebase database connection status, server health, and real-time clock.
 
-### Step 1: Clone or Navigate to Directory
-```bash
-cd admin-dashboard
-```
+### 👥 2. Employee Management
+- **Directory & Search:** Search and filter full employee roster by department, role, or active status.
+- **Add & Edit Profiles:** Create new staff profiles or modify existing contact and job details.
+- **Individual Detail Pages:** Complete timeline of recent sessions, visits, and historical attendance.
+- **Credential Management:** Reset employee credentials securely from the dashboard.
 
-### Step 2: Create Virtual Environment
-```bash
-python3 -m venv venv
-source venv/bin/activate  # On Linux/Mac
-# OR
-venv\Scripts\activate  # On Windows
-```
+### 📅 3. Attendance Management
+- **Attendance Records:** Real-time log of daily punch-ins and punch-outs.
+- **Status Classification:** Automatic categorization for On Time, Late Start, and Half Day.
+- **Approval Actions:** Review, approve, or reject late starts and half days with remarks.
+- **Date Filtering:** Quick filtering by specific dates or employee IDs.
 
-### Step 3: Install Dependencies
-```bash
-pip install -r requirements.txt
-```
+### 📝 4. Permission & Leave Management
+- **Request Workflows:** Manage Late Start requests and Leave types (Casual Leave, Medical Leave, Emergency, Planned).
+- **Status Filter:** Categorize requests by Pending, Approved, or Rejected.
+- **Manager Remarks:** Add administrative remarks and decisions with timestamps.
 
-### Step 4: Configure Environment Variables
-```bash
-cp .env.example .env
-nano .env  # Edit with your settings
-```
+### ⏰ 5. Work Session Monitoring
+- **Live Session Tracking:** Monitor ongoing work sessions in real time.
+- **Duration Metrics:** Automatic breakdown of total work hours versus break periods.
+- **Detailed Audits:** Audit punch-in/out timestamps, GPS coordinates, and session photos.
 
-Update `.env` with your configuration:
-```env
-FIREBASE_DATABASE_URL=https://login-otp-29372-default-rtdb.firebaseio.com
-FIREBASE_CREDENTIALS_PATH=firebase-credentials.json
-FLASK_SECRET_KEY=your-secret-key-here-change-this
-ADMIN_USERNAME=admin
-ADMIN_PASSWORD=admin123
-HOST=0.0.0.0
-PORT=5000
-```
+### 📍 6. Field Visits Tracking
+- **Field Staff Visits:** Track on-ground visits to clients, farmers, and partner sites.
+- **Location Audits:** Geo-tagged visit locations and check-in coordinates.
+- **Visit Details:** Review visit purposes, meeting outcomes, notes, and photos.
 
-### Step 5: Add Firebase Credentials
-1. Go to Firebase Console → Project Settings → Service Accounts
-2. Click "Generate New Private Key"
-3. Save the JSON file as `firebase-credentials.json` in the `admin-dashboard` folder
+### 📋 7. Task Management (Field & Office)
+- **Dual Assignment Workflows:** Dedicated assignment forms for Field Tasks and Office Tasks.
+- **Priority & Deadlines:** Set priority levels (Low, Medium, High, Urgent) and due dates.
+- **Status Tracking:** Track tasks through Pending, In Progress, and Completed states.
+- **Edit & Delete:** Full lifecycle management including status updates and deletions.
 
-### Step 6: Run the Application
-```bash
-python app.py
-```
+### 🚗 8. Travel Expenses
+- **Reimbursement Monitoring:** Track travel expense claims submitted by field personnel.
+- **Journey Audits:** Verify reported distance (km), transportation mode, and claim amounts against field visit records.
+- **Detailed Expense Views:** Inspect bill attachments, purpose of journey, and approval status.
 
-The dashboard will be available at: `http://localhost:5000`
+### 📐 9. Field Measurements
+- **Land Survey Records:** View plot boundaries and land area measurements collected by field staff.
+- **Area Calculation:** Accurate unit metrics (acres/cents/hectares) and perimeter assessments.
+- **Crop Information:** Record crop types, plot notes, and geo-coordinates.
 
----
+### 🐛 10. Pest Alerts & Crop Health
+- **Infestation Monitoring:** Real-time logging of agricultural pest attacks and disease alerts.
+- **Severity Levels:** Categorization by Low, Medium, High, and Critical alert levels.
+- **Incident Management:** Add new alerts, assign affected zones, and delete resolved alerts.
 
-## 🔐 Default Login Credentials
-
-**Username:** `admin`  
-**Password:** `admin123`
-
-⚠️ **IMPORTANT:** Change these credentials in production!
+### 📈 11. Reports & Analytics
+- **Monthly Attendance Summaries:** Detailed breakdown of employee punctuality, working days, and deductions.
+- **Filterable Time Periods:** View summaries by month and year.
+- **Export Capabilities:** Prepare data for administrative reviews and payroll processing.
 
 ---
 
 ## 📁 Project Structure
 
 ```
-admin-dashboard/
-├── app.py                      # Main Flask application
-├── filters.py                  # Custom Jinja2 filters
-├── requirements.txt            # Python dependencies
-├── .env.example               # Environment variables template
-├── .env                       # Your environment variables (create this)
-├── firebase-credentials.json  # Firebase service account key (add this)
-├── README.md                  # This file
-├── templates/                 # HTML templates
-│   ├── base.html             # Base template with navigation
-│   ├── login.html            # Login page
-│   ├── dashboard.html        # Main dashboard
-│   ├── employees.html        # Employee list
-│   ├── employee_detail.html  # Employee details
-│   ├── attendance.html       # Attendance records
-│   ├── permissions.html      # Permission requests
-│   ├── sessions.html         # Work sessions
-│   ├── reports.html          # Reports page
-│   ├── 404.html              # Not found page
-│   └── 500.html              # Error page
-└── static/                    # Static files
-    ├── css/
-    │   └── style.css         # Custom styles
-    └── js/
-        └── main.js           # JavaScript functions
+admin-overview/
+├── app.py                      # Main Flask application and API route controller
+├── filters.py                  # Custom Jinja2 template filters and formatters
+├── requirements.txt            # Python package dependencies
+├── .env.example                # Template for environment configuration
+├── .env                        # Local environment variables (kept private via .gitignore)
+├── .gitignore                  # Git exclusions for secrets, credentials, and venvs
+├── firebase-credentials.json   # Firebase service account private key (never committed)
+├── setup.sh                    # Automated environment setup script
+├── README.md                   # Project documentation
+│
+├── static/                     # Static assets
+│   ├── css/
+│   │   └── style.css           # Custom styling and responsive UI rules
+│   └── js/
+│       └── main.js             # Client-side scripts and interactive UI helpers
+│
+└── templates/                  # Jinja2 HTML Templates
+    ├── base.html               # Main layout wrapper and responsive navigation sidebar
+    ├── login.html              # Authentication page
+    ├── dashboard.html          # Main overview dashboard
+    ├── employees.html          # Staff directory
+    ├── add_employee.html       # Add new employee form
+    ├── edit_employee.html      # Edit employee details
+    ├── employee_detail.html    # Detailed employee history and profile
+    ├── attendance.html         # Attendance logs and approval console
+    ├── permissions.html        # Permission and leave requests
+    ├── sessions.html           # Active and completed work sessions
+    ├── session_detail.html     # Deep dive into session duration & photos
+    ├── visits.html             # Field visits monitoring list
+    ├── visit_detail.html       # Specific visit details and geo-information
+    ├── tasks.html              # Task management overview
+    ├── task_assign_field.html  # Field task assignment form
+    ├── task_assign_office.html # Office task assignment form
+    ├── task_detail.html        # Task view and status management
+    ├── task_form.html          # Generic task create/edit template
+    ├── travel_expenses.html    # Travel reimbursement claims list
+    ├── travel_expense_detail.html # Individual travel expense breakdown
+    ├── field_measurements.html # Land measurement list
+    ├── field_measurement_detail.html # Plot details and survey record
+    ├── pest_alerts.html        # Agricultural pest alerts dashboard
+    ├── reports.html            # Attendance & analytics reports
+    ├── 404.html                # Not found error page
+    └── 500.html                # Server error page
 ```
 
 ---
 
-## 🎨 Screenshots & Features
+## 🚀 Installation & Setup
 
-### Dashboard
-- **Statistics Cards:** Total employees, active sessions, today's attendance, pending permissions
-- **Quick Actions:** Direct links to common tasks
-- **System Information:** Server status, Firebase connection, current date
+### Prerequisites
+- **Python 3.8+**
+- **pip** (Python package installer)
+- **Firebase Project** with a Realtime Database enabled
+- **Firebase Service Account Key** (`.json`)
 
-### Employee Management
-- **Employee List:** View all employees with status
-- **Employee Details:** Complete profile with recent sessions and attendance
-- **Monthly Summary:** On-time days, late starts, half days
-
-### Attendance Management
-- **Filter Options:** By date and status
-- **Approval Actions:** Approve or reject with one click
-- **Status Badges:** Color-coded (Green=On Time, Orange=Late, Red=Half Day)
-
-### Permission Management
-- **Request Types:** Late Start, CL, ML, Emergency, Planned Leave
-- **Approval Workflow:** Review and approve/reject with remarks
-- **Status Tracking:** Pending, Approved, Rejected
-
----
-
-## 🔧 Configuration
-
-### Firebase Setup
-1. Ensure your Firebase Realtime Database has the following structure:
-```
-/
-├── employees/
-├── sessions/
-├── attendance/
-├── attendanceByDate/
-├── attendanceSummary/
-├── permissions/
-├── employeePermissions/
-├── lateStartRecords/
-└── snoozeChecks/
+### Step 1: Clone the Repository
+```bash
+git clone https://github.com/nscare62-maker/admin-overview.git
+cd admin-overview
 ```
 
-2. Set Firebase Database Rules (for development):
-```json
-{
-  "rules": {
-    ".read": "auth != null",
-    ".write": "auth != null"
-  }
-}
+### Step 2: Create and Activate a Virtual Environment
+```bash
+# On Windows:
+python -m venv .venv
+.venv\Scripts\activate
+
+# On Linux / macOS:
+python3 -m venv .venv
+source .venv/bin/activate
 ```
 
-### Security Rules (Production)
-For production, implement proper security rules based on your requirements.
+### Step 3: Install Required Dependencies
+```bash
+pip install -r requirements.txt
+```
 
----
+### Step 4: Configure Environment Variables
+Copy `.env.example` to create your `.env` file:
+```bash
+cp .env.example .env
+```
 
-## 🌐 API Endpoints
+Update `.env` with your settings:
+```env
+# Firebase Configuration
+FIREBASE_DATABASE_URL=https://your-project-default-rtdb.firebaseio.com
+FIREBASE_CREDENTIALS_PATH=firebase-credentials.json
+AZURE_MAPS_SUBSCRIPTION_KEY=your-azure-maps-key-if-used
 
-### Authentication
-- `GET /login` - Login page
-- `POST /login` - Login submission
-- `GET /logout` - Logout
+# Flask Configuration
+FLASK_SECRET_KEY=generate-a-secure-random-secret-key
+FLASK_ENV=development
+FLASK_DEBUG=True
 
-### Dashboard
-- `GET /` - Main dashboard
-- `GET /api/stats` - Get statistics (JSON)
+# Admin Credentials
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=admin123
 
-### Employees
-- `GET /employees` - List all employees
-- `GET /employees/<id>` - Employee details
+# Server Binding
+HOST=0.0.0.0
+PORT=5000
+```
 
-### Attendance
-- `GET /attendance` - List attendance records
-- `POST /attendance/<id>/approve` - Approve attendance
-- `POST /attendance/<id>/reject` - Reject attendance
+### Step 5: Add Firebase Service Account Key
+1. Go to **Firebase Console** → **Project Settings** → **Service Accounts**.
+2. Click **Generate New Private Key**.
+3. Save the downloaded file as `firebase-credentials.json` in the root of the project directory.
 
-### Permissions
-- `GET /permissions` - List permission requests
-- `POST /permissions/<id>/approve` - Approve permission
-- `POST /permissions/<id>/reject` - Reject permission
+> 🔒 **Security Notice:** `firebase-credentials.json` and `.env` are included in `.gitignore` to prevent secret leakage.
 
-### Sessions
-- `GET /sessions` - List work sessions
-
-### Reports
-- `GET /reports` - Generate reports
-
----
-
-## 🔒 Security Features
-
-1. **Session Management:** Flask sessions with secret key
-2. **Login Required:** All routes protected with `@login_required` decorator
-3. **Firebase Authentication:** Service account credentials
-4. **HTTPS Ready:** Can be deployed with SSL/TLS
-5. **CSRF Protection:** Built-in Flask protection
-
----
-
-## 🚀 Deployment
-
-### Option 1: Local Server
+### Step 6: Start the Application
 ```bash
 python app.py
 ```
+Open your browser and navigate to:
+```
+http://localhost:5000
+```
 
-### Option 2: Gunicorn (Production)
+---
+
+## 🔐 Default Admin Credentials
+
+| Field | Default Value | Note |
+|---|---|---|
+| **Username** | `admin` | Configurable in `.env` (`ADMIN_USERNAME`) |
+| **Password** | `admin123` | Configurable in `.env` (`ADMIN_PASSWORD`) |
+
+> ⚠️ **Important:** Change default credentials immediately before deploying to production!
+
+---
+
+## 🌐 Complete Route Map
+
+### 🔐 Authentication
+- `GET /login` - Admin login interface
+- `POST /login` - Process admin authentication
+- `GET /logout` - Clear session and sign out
+
+### 📊 Dashboard & Analytics
+- `GET /` or `GET /dashboard` - Central operations dashboard
+- `GET /api/stats` - JSON endpoint for real-time KPI metrics
+
+### 👥 Employees
+- `GET /employees` - Directory of all staff members
+- `GET /employees/add` & `POST /employees/add` - Add a new employee
+- `GET /employees/<id>` - View employee profile and timeline
+- `GET /employees/<id>/edit` & `POST /employees/<id>/edit` - Edit employee data
+- `POST /employees/<id>/reset-password` - Reset employee password
+
+### 📅 Attendance
+- `GET /attendance` - Daily attendance records and filter
+- `POST /attendance/<id>/approve` - Approve late start or half day
+- `POST /attendance/<id>/reject` - Reject attendance variation
+
+### 📝 Permissions & Leave
+- `GET /permissions` - Review permission and leave requests
+- `POST /permissions/<id>/approve` - Grant approval with manager remarks
+- `POST /permissions/<id>/reject` - Reject permission with remarks
+
+### ⏰ Work Sessions
+- `GET /sessions` - Monitor live and historical work sessions
+- `GET /sessions/<id>` - Detailed session view with duration breakdown & photos
+
+### 📍 Field Visits
+- `GET /visits` - Track on-ground visits with location filtering
+- `GET /visits/<id>` - Deep dive into visit notes and GPS coordinates
+
+### 📋 Task Management
+- `GET /tasks` - Task board with status filters
+- `GET /tasks/<id>` - Individual task overview
+- `GET /tasks/assign/field` & `POST /tasks/assign/field` - Assign field tasks
+- `GET /tasks/assign/office` & `POST /tasks/assign/office` - Assign office tasks
+- `GET /tasks/<id>/edit` & `POST /tasks/<id>/edit` - Modify existing task
+- `POST /tasks/<id>/status` - Update task progress state
+- `POST /tasks/<id>/delete` - Remove a task
+
+### 🚗 Travel Expenses
+- `GET /travel-expenses` - Claims list with distance and amounts
+- `GET /travel-expenses/<id>` - Detailed view of travel route & claim
+
+### 📐 Field Measurements
+- `GET /field-measurements` - Land survey records and calculated areas
+- `GET /field-measurements/<id>` - Plot geometry, boundaries, and notes
+
+### 🐛 Pest Alerts
+- `GET /pest-alerts` - Pest incident monitor
+- `POST /pest-alerts/add` - Log a new crop pest occurrence
+- `POST /pest-alerts/<id>/delete` - Clear an alert
+
+### 📈 Reports
+- `GET /reports` - Monthly employee attendance and punctuality summaries
+
+---
+
+## 🔒 Security Architecture
+
+1. **Session Protection:** Flask signed cookie sessions with configurable secret key.
+2. **Access Control:** All operational routes are guarded by `@login_required`.
+3. **Protected Credentials:** Private keys and configuration files are excluded via `.gitignore`.
+4. **Production WSGI Ready:** Configured for high-concurrency production deployments with `gunicorn`.
+
+---
+
+## 🚀 Production Deployment
+
+To run in production using Gunicorn:
 ```bash
 gunicorn -w 4 -b 0.0.0.0:5000 app:app
 ```
 
-### Option 3: Docker (Coming Soon)
-```bash
-docker build -t s2c-admin .
-docker run -p 5000:5000 s2c-admin
-```
-
-### Option 4: Cloud Deployment
-- **Heroku:** Add `Procfile` and deploy
-- **AWS:** Use Elastic Beanstalk or EC2
-- **Google Cloud:** Use App Engine or Cloud Run
-- **Azure:** Use App Service
-
----
-
-## 📊 Usage Guide
-
-### Approving Attendance
-1. Navigate to **Attendance** page
-2. Filter by date or status
-3. Click **✓** button to approve
-4. Click **✗** button to reject
-5. Add remarks if needed
-
-### Approving Permissions
-1. Navigate to **Permissions** page
-2. Click **Pending** to see pending requests
-3. Review request details
-4. Click **Approve** or **Reject**
-5. Add remarks explaining decision
-
-### Monitoring Sessions
-1. Navigate to **Sessions** page
-2. Filter by **Active** to see current sessions
-3. View employee work duration
-4. Monitor break times
-
-### Generating Reports
-1. Navigate to **Reports** page
-2. Select report type
-3. Choose month/date range
-4. Click **Generate**
-5. Export to CSV if needed
-
----
-
-## 🛠️ Troubleshooting
-
-### Firebase Connection Error
-- Check `firebase-credentials.json` file exists
-- Verify Firebase Database URL in `.env`
-- Ensure Firebase project is active
-
-### Login Not Working
-- Check `ADMIN_USERNAME` and `ADMIN_PASSWORD` in `.env`
-- Clear browser cookies
-- Check Flask secret key is set
-
-### Data Not Loading
-- Verify Firebase database has data
-- Check Firebase security rules
-- Check browser console for errors
-
-### Port Already in Use
-```bash
-# Change port in .env
-PORT=8000
-
-# Or kill existing process
-lsof -ti:5000 | xargs kill -9
-```
-
----
-
-## 📝 Development
-
-### Adding New Features
-1. Create new route in `app.py`
-2. Create template in `templates/`
-3. Add navigation link in `base.html`
-4. Test thoroughly
-
-### Custom Filters
-Add new filters in `filters.py`:
-```python
-def my_custom_filter(value):
-    # Your logic here
-    return formatted_value
-
-# Register in register_filters()
-app.jinja_env.filters['my_filter'] = my_custom_filter
-```
-
-### Styling
-Edit `static/css/style.css` for custom styles.
-
----
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create feature branch
-3. Make changes
-4. Test thoroughly
-5. Submit pull request
-
 ---
 
 ## 📄 License
-
-This project is part of the S2C Employee Monitoring System.
-
----
-
-## 📞 Support
-
-For issues or questions:
-1. Check this README
-2. Review Firebase console
-3. Check application logs
-4. Contact system administrator
-
----
-
-## 🎯 Roadmap
-
-- [ ] Export reports to PDF
-- [ ] Email notifications
-- [ ] SMS alerts
-- [ ] Mobile responsive improvements
-- [ ] Dark mode
-- [ ] Multi-language support
-- [ ] Advanced analytics
-- [ ] Role-based access control
-- [ ] Audit logs
-- [ ] Backup/restore functionality
-
----
-
-**Version:** 1.0.0  
-**Last Updated:** April 29, 2026  
-**Status:** ✅ Production Ready
+This project is licensed under the Apache License 2.0. See the [LICENSE](LICENSE) file for details.
