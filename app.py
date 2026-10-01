@@ -290,16 +290,22 @@ def normalize_visit_datetime(value):
 
 # Initialize Firebase
 try:
-    # Resolve credentials path relative to this script's directory
-    _script_dir = os.path.dirname(os.path.abspath(__file__))
-    cred_path = os.getenv('FIREBASE_CREDENTIALS_PATH', 'firebase-credentials.json')
-    if not os.path.isabs(cred_path):
-        cred_path = os.path.join(_script_dir, cred_path)
+    cred_json_env = os.getenv('FIREBASE_CREDENTIALS_JSON')
+    if cred_json_env:
+        import json
+        cred_dict = json.loads(cred_json_env)
+        cred = credentials.Certificate(cred_dict)
+    else:
+        # Resolve credentials path relative to this script's directory
+        _script_dir = os.path.dirname(os.path.abspath(__file__))
+        cred_path = os.getenv('FIREBASE_CREDENTIALS_PATH', 'firebase-credentials.json')
+        if not os.path.isabs(cred_path):
+            cred_path = os.path.join(_script_dir, cred_path)
 
-    if not os.path.exists(cred_path):
-        raise FileNotFoundError(f"Firebase credentials file not found at: {cred_path}")
+        if not os.path.exists(cred_path):
+            raise FileNotFoundError(f"Firebase credentials file not found at: {cred_path}")
 
-    cred = credentials.Certificate(cred_path)
+        cred = credentials.Certificate(cred_path)
     firebase_admin.initialize_app(cred, {
         'databaseURL': os.getenv('FIREBASE_DATABASE_URL', 'https://login-otp-29372-default-rtdb.firebaseio.com')
     })
