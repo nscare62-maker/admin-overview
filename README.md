@@ -2,6 +2,9 @@
 
 A comprehensive Flask-based web dashboard for monitoring, managing, and tracking employees, field visits, tasks, and field operations in the S2C (Start-to-Close) management system.
 
+🌐 **Live Deployed Web Application:** [https://admin-overview-production.up.railway.app](https://admin-overview-production.up.railway.app)  
+🔐 **Default Login:** Username: `admin` | Password: `admin123`
+
 ---
 
 ## 🎯 Features & Modules
